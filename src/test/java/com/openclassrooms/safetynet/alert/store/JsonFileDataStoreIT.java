@@ -1,8 +1,10 @@
 package com.openclassrooms.safetynet.alert.store;
 
+import com.openclassrooms.safetynet.alert.TestSentenceGenerator;
 import com.openclassrooms.safetynet.alert.model.Database;
 import com.openclassrooms.safetynet.alert.model.Person;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@DisplayNameGeneration(TestSentenceGenerator.class)
 public class JsonFileDataStoreIT {
 
     @Autowired
