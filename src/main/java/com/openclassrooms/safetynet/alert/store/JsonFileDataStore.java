@@ -3,6 +3,7 @@ package com.openclassrooms.safetynet.alert.store;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openclassrooms.safetynet.alert.model.Database;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -13,10 +14,7 @@ import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.Optional;
 
-/**
- * Component responsible for loading and persisting the application's JSON
- * database file.
- */
+/** Component responsible for loading and persisting the application's JSON database file. */
 @Component
 public class JsonFileDataStore {
 
@@ -31,37 +29,30 @@ public class JsonFileDataStore {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    /**
-     * Path to the initial JSON file.
-     */
+    /** Path to the initial JSON file. */
     private final String initial;
 
-    /**
-     * Path to the current JSON file used for reading/writing.
-     */
+    /** Path to the current JSON file used for reading/writing. */
     private final String current;
 
-    /**
-     * Abstraction for file operations to facilitate testing.
-     */
+    /** Abstraction for file operations to facilitate testing. */
     private final FilesOperations fileOperations;
 
-    public JsonFileDataStore(@Value("${data.store.path.current}") String current, @Value("${data.store.path.initial}") String initial, FilesOperations fileOperations) {
+    public JsonFileDataStore(
+            @Value("${data.store.path.current}") String current,
+            @Value("${data.store.path.initial}") String initial,
+            FilesOperations fileOperations) {
         this.current = current;
         this.initial = initial;
         this.fileOperations = fileOperations;
     }
 
-    /**
-     * Returns the configured current file path.
-     */
+    /** Returns the configured current file path. */
     public String current() {
         return current;
     }
 
-    /**
-     * Ensure the current file exists by copying the initial file if needed.
-     */
+    /** Ensure the current file exists by copying the initial file if needed. */
     public void load() {
         Path currentPath = Path.of(current);
         Path initialPath = Path.of(initial);
@@ -110,5 +101,4 @@ public class JsonFileDataStore {
             throw new RuntimeException("Failed to write JSON file", e);
         }
     }
-
 }

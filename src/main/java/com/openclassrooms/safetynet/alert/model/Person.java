@@ -1,11 +1,11 @@
 package com.openclassrooms.safetynet.alert.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
-/**
- * Model representing a person.
- */
+/** Model representing a person. */
 @Data
+@AllArgsConstructor
 public class Person {
 
     private String firstName;
@@ -15,5 +15,4 @@ public class Person {
     private String zip;
     private String phone;
     private String email;
-
 }

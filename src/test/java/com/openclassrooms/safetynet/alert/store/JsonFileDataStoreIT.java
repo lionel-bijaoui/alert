@@ -1,8 +1,15 @@
 package com.openclassrooms.safetynet.alert.store;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.openclassrooms.safetynet.alert.TestSentenceGenerator;
 import com.openclassrooms.safetynet.alert.model.Database;
 import com.openclassrooms.safetynet.alert.model.Person;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.Test;
@@ -16,15 +23,12 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @SpringBootTest
 @ActiveProfiles("test")
 @DisplayNameGeneration(TestSentenceGenerator.class)
 public class JsonFileDataStoreIT {
 
-    @Autowired
-    JsonFileDataStore store;
+    @Autowired JsonFileDataStore store;
 
     @AfterEach
     void cleanup() throws Exception {
@@ -42,7 +46,9 @@ public class JsonFileDataStoreIT {
 
         // The current file must exist and not be empty
         assertTrue(Files.exists(currentPath), "The current JSON file must exist after loading.");
-        assertTrue(Files.size(currentPath) > 0, "The current JSON file must not be empty after loading.");
+        assertTrue(
+                Files.size(currentPath) > 0,
+                "The current JSON file must not be empty after loading.");
 
         // Read the database
         Optional<Database> maybeDb = store.readAll();
@@ -59,10 +65,19 @@ public class JsonFileDataStoreIT {
         store.load();
 
         // Prepare a minimal database with a single person
-        Database newDb = new Database();
-        newDb.setPersons(List.of(new Person()));
-        newDb.setFirestations(List.of());
-        newDb.setMedicalrecords(null);
+        Database newDb =
+                new Database(
+                        List.of(
+                                new Person(
+                                        "TestFirstName",
+                                        "TestLastName",
+                                        "123 Test St",
+                                        "TestCity",
+                                        "12345",
+                                        "123-456-7890",
+                                        "")),
+                        List.of(),
+                        null);
 
         // Write modified database
         store.writeAll(newDb);
@@ -73,9 +88,15 @@ public class JsonFileDataStoreIT {
         Database dbAfter = maybeDbAfter.get();
 
         assertNotNull(dbAfter.getPersons(), "The persons list after writing must not be null.");
-        assertEquals(1, dbAfter.getPersons().size(), "After modified write, there must be exactly 1 person.");
-        assertTrue(dbAfter.getFirestations() != null && dbAfter.getFirestations().isEmpty(), "The fire stations list must be empty after the modified write.");
-        assertNull(dbAfter.getMedicalrecords(), "The medical records list must be null after the modified write.");
+        assertEquals(
+                1,
+                dbAfter.getPersons().size(),
+                "After modified write, there must be exactly 1 person.");
+        assertTrue(
+                dbAfter.getFirestations() != null && dbAfter.getFirestations().isEmpty(),
+                "The fire stations list must be empty after the modified write.");
+        assertNull(
+                dbAfter.getMedicalrecords(),
+                "The medical records list must be null after the modified write.");
     }
-
 }

@@ -6,17 +6,15 @@ import java.nio.file.CopyOption;
 import java.nio.file.Path;
 
 /**
- * Abstraction of file operations used by the application.
- * This interface decouples business logic from the concrete implementation
- * ({@link DefaultFilesOperations}) and makes unit testing easier by
- * allowing filesystem operations to be mocked without touching the real
- * filesystem.
+ * Abstraction of file operations used by the application. This interface decouples business logic
+ * from the concrete implementation ({@link DefaultFilesOperations}) and makes unit testing easier
+ * by allowing filesystem operations to be mocked without touching the real filesystem.
  */
 public interface FilesOperations {
 
     /**
-     * Checks if the specified path does not exist.
-     * Equivalent to {@code File::notExists} from {@link java.nio.file.Files}.
+     * Checks if the specified path does not exist. Equivalent to {@code File::notExists} from
+     * {@link java.nio.file.Files}.
      *
      * @param path path to check
      * @return {@code true} if the path does not exist
@@ -24,8 +22,8 @@ public interface FilesOperations {
     boolean notExists(Path path);
 
     /**
-     * Creates directories if necessary.
-     * Equivalent to {@code File::createDirectories} from {@link java.nio.file.Files}.
+     * Creates directories if necessary. Equivalent to {@code File::createDirectories} from {@link
+     * java.nio.file.Files}.
      *
      * @param dir directory to create
      * @throws IOException if directory creation fails
@@ -33,11 +31,11 @@ public interface FilesOperations {
     void createDirectories(Path dir) throws IOException;
 
     /**
-     * Copies a source file to a target location with optional copy options.
-     * Equivalent to {@code File::copy} from {@link java.nio.file.Files}.
+     * Copies a source file to a target location with optional copy options. Equivalent to {@code
+     * File::copy} from {@link java.nio.file.Files}.
      *
-     * @param source  source path
-     * @param target  target path
+     * @param source source path
+     * @param target target path
      * @param options copy options
      * @throws IOException if the copy fails
      */
@@ -50,5 +48,4 @@ public interface FilesOperations {
      * @return {@link File} object representing the path
      */
     File getFile(String path);
-
 }

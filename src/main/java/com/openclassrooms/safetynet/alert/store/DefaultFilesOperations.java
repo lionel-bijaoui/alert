@@ -8,10 +8,7 @@ import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-/**
- * Default implementation of {@link FilesOperations} backed by
- * {@link java.nio.file.Files}.
- */
+/** Default implementation of {@link FilesOperations} backed by {@link java.nio.file.Files}. */
 @Component
 public class DefaultFilesOperations implements FilesOperations {
 
@@ -34,5 +31,4 @@ public class DefaultFilesOperations implements FilesOperations {
     public File getFile(String path) {
         return new File(path);
     }
-
 }
