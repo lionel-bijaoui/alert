@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 /** Model representing a person's medical record. */
 @Data
@@ -19,12 +20,12 @@ public class MedicalRecord {
      *
      * <pre>["aznol:350mg", "hydrapermazol:100mg"]</pre>
      */
-    private String[] medications;
+    private List<String> medications;
 
     /**
      * Example:
      *
      * <pre>["nillacilan"]</pre>
      */
-    private String[] allergies;
+    private List<String> allergies;
 }
