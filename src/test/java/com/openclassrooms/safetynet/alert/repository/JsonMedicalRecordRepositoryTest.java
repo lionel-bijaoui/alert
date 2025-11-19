@@ -3,10 +3,10 @@ package com.openclassrooms.safetynet.alert.repository;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.openclassrooms.safetynet.alert.TestSentenceGenerator;
 import com.openclassrooms.safetynet.alert.model.Database;
 import com.openclassrooms.safetynet.alert.model.MedicalRecord;
 import com.openclassrooms.safetynet.alert.store.JsonFileDataStore;
+import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -35,7 +35,6 @@ class JsonMedicalRecordRepositoryTest {
     @BeforeEach
     void setUp() {
         database = new Database(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
-        database.setMedicalrecords(new ArrayList<>());
     }
 
     @Test

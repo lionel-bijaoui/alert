@@ -2,9 +2,9 @@ package com.openclassrooms.safetynet.alert.repository;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.openclassrooms.safetynet.alert.TestSentenceGenerator;
 import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.store.JsonFileDataStore;
+import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +29,8 @@ public class JsonPersonsRepositoryIT {
     static final String PERSON_PHONE = "841-874-6512";
     static final String PERSON_EMAIL = "john.doe@email.com";
 
-    @Autowired JsonPersonRepository personsRepository;
-
-    JsonFileDataStore store;
+    @Autowired private JsonPersonRepository personsRepository;
+    @Autowired private JsonFileDataStore store;
 
     @BeforeEach
     void setup() {

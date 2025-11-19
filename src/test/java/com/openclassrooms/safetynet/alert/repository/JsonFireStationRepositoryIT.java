@@ -2,9 +2,9 @@ package com.openclassrooms.safetynet.alert.repository;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.openclassrooms.safetynet.alert.TestSentenceGenerator;
 import com.openclassrooms.safetynet.alert.model.FireStation;
 import com.openclassrooms.safetynet.alert.store.JsonFileDataStore;
+import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;

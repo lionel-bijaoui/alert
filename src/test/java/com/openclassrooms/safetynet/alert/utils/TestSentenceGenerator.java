@@ -1,4 +1,4 @@
-package com.openclassrooms.safetynet.alert;
+package com.openclassrooms.safetynet.alert.utils;
 
 import org.junit.jupiter.api.DisplayNameGenerator;
 
