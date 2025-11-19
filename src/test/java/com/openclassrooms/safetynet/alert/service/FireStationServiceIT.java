@@ -1,0 +1,98 @@
+package com.openclassrooms.safetynet.alert.service;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import com.openclassrooms.safetynet.alert.model.FireStation;
+import com.openclassrooms.safetynet.alert.repository.JsonFireStationRepository;
+import com.openclassrooms.safetynet.alert.store.JsonFileDataStore;
+import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+
+@SpringBootTest
+@ActiveProfiles("test")
+@DisplayNameGeneration(TestSentenceGenerator.class)
+class FireStationServiceIT {
+
+    private static final String EXISTING_FIRE_STATION_ADDRESS = "1509 Culver St";
+    private static final String EXISTING_FIRE_STATION_NUMBER = "3";
+    private static final String NEW_FIRE_STATION_ADDRESS = "29 15th St";
+    private static final String NEW_FIRE_STATION_NUMBER = "4";
+
+    @Autowired private FireStationService fireStationService;
+    @Autowired private JsonFileDataStore store;
+    @Autowired private JsonFireStationRepository fireStationRepository;
+
+    @BeforeEach
+    void setup() {
+        store.load();
+    }
+
+    @AfterEach
+    void cleanup() throws Exception {
+        Path current = Path.of(store.current());
+        if (Files.exists(current)) {
+            Files.delete(current);
+        }
+    }
+
+    @Test
+    void addFireStation_shouldPersistAndReturn_whenNew() {
+        FireStation toAdd = new FireStation(NEW_FIRE_STATION_ADDRESS, NEW_FIRE_STATION_NUMBER);
+
+        FireStation saved = fireStationService.addFireStation(toAdd);
+
+        assertNotNull(saved);
+        assertEquals(NEW_FIRE_STATION_ADDRESS, saved.getAddress());
+        assertEquals(NEW_FIRE_STATION_NUMBER, saved.getStation());
+
+        Optional<FireStation> found = fireStationRepository.findByAddress(NEW_FIRE_STATION_ADDRESS);
+        assertTrue(found.isPresent(), "The new fire station should be present in the repository");
+        assertEquals(NEW_FIRE_STATION_ADDRESS, found.get().getAddress());
+        assertEquals(NEW_FIRE_STATION_NUMBER, found.get().getStation());
+    }
+
+    @Test
+    void updateFireStation_shouldPersistUpdate_whenExisting() {
+        FireStation updated =
+                new FireStation(EXISTING_FIRE_STATION_ADDRESS, NEW_FIRE_STATION_NUMBER);
+
+        FireStation result = fireStationService.updateFireStation(updated);
+
+        assertNotNull(result);
+        assertEquals(EXISTING_FIRE_STATION_ADDRESS, result.getAddress());
+        assertEquals(NEW_FIRE_STATION_NUMBER, result.getStation());
+
+        Optional<FireStation> found =
+                fireStationRepository.findByAddress(EXISTING_FIRE_STATION_ADDRESS);
+        assertTrue(found.isPresent(), "The fire station should still be present after update");
+        assertEquals(NEW_FIRE_STATION_NUMBER, found.get().getStation());
+    }
+
+    @Test
+    void deleteFireStation_shouldRemove_whenExisting() {
+        Optional<FireStation> before =
+                fireStationRepository.findByAddress(EXISTING_FIRE_STATION_ADDRESS);
+        assertTrue(before.isPresent(), "Precondition: existing fire station should be present");
+        assertEquals(
+                EXISTING_FIRE_STATION_NUMBER,
+                before.get().getStation(),
+                "Precondition: station number should match fixture");
+
+        fireStationService.deleteFireStation(EXISTING_FIRE_STATION_ADDRESS);
+
+        Optional<FireStation> after =
+                fireStationRepository.findByAddress(EXISTING_FIRE_STATION_ADDRESS);
+        assertTrue(after.isEmpty(), "The fire station should be removed from the repository");
+    }
+}
