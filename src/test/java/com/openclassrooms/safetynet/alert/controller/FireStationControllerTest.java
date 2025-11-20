@@ -41,7 +41,7 @@ class FireStationControllerTest {
     @BeforeEach
     void setUp() {
         dto = new FireStationDTO("1509 Culver St", 3);
-        entity = new FireStation(dto.address(), String.valueOf(dto.station()));
+        entity = new FireStation(dto.address(), dto.station());
     }
 
     @Test
@@ -90,8 +90,7 @@ class FireStationControllerTest {
     void updateFireStation_shouldReturnUpdatedFireStation_whenFireStationIsUpdated()
             throws Exception {
         FireStationDTO updatedDto = new FireStationDTO(dto.address(), 4);
-        FireStation updatedEntity =
-                new FireStation(updatedDto.address(), String.valueOf(updatedDto.station()));
+        FireStation updatedEntity = new FireStation(updatedDto.address(), updatedDto.station());
 
         when(fireStationMapper.toEntity(updatedDto)).thenReturn(updatedEntity);
         when(fireStationService.updateFireStation(updatedEntity)).thenReturn(updatedEntity);
@@ -111,8 +110,7 @@ class FireStationControllerTest {
     @Test
     void updateFireStation_shouldReturnServerError_whenFireStationDoesNotExist() throws Exception {
         FireStationDTO updatedDto = new FireStationDTO(dto.address(), 4);
-        FireStation updatedEntity =
-                new FireStation(updatedDto.address(), String.valueOf(updatedDto.station()));
+        FireStation updatedEntity = new FireStation(updatedDto.address(), updatedDto.station());
 
         when(fireStationMapper.toEntity(updatedDto)).thenReturn(updatedEntity);
         when(fireStationService.updateFireStation(updatedEntity))

@@ -20,7 +20,7 @@ public interface FireStationRepository {
     Optional<FireStation> findByAddress(String address);
 
     /** Find FireStations by station number. */
-    List<FireStation> findByStationNumber(String stationNumber);
+    List<FireStation> findByStationNumber(Integer stationNumber);
 
     /** Delete a FireStation by address. */
     void deleteByAddress(String address);

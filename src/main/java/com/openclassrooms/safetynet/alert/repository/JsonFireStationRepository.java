@@ -51,9 +51,9 @@ public class JsonFireStationRepository implements FireStationRepository {
     }
 
     @Override
-    public List<FireStation> findByStationNumber(String stationNumber) {
+    public List<FireStation> findByStationNumber(Integer stationNumber) {
         return findAll().stream()
-                .filter(fireStation -> fireStation.getStation().equalsIgnoreCase(stationNumber))
+                .filter(fireStation -> fireStation.getStation().equals(stationNumber))
                 .toList();
     }
 

@@ -25,7 +25,7 @@ import java.util.Optional;
 class JsonFireStationRepositoryTest {
 
     static final String FIRE_STATION_ADDRESS = "1509 Culver St";
-    static final String FIRE_STATION_NUMBER = "3";
+    static final Integer FIRE_STATION_NUMBER = 3;
 
     @Mock JsonFileDataStore jsonFileDataStore;
 
@@ -59,7 +59,7 @@ class JsonFireStationRepositoryTest {
 
     @Test
     void save_shouldUpdateExistingFireStation_whenFireStationAlreadyExists() {
-        final String FIRE_STATION_NEW_NUMBER = "4";
+        final Integer FIRE_STATION_NEW_NUMBER = 4;
         FireStation existingFireStation =
                 new FireStation(FIRE_STATION_ADDRESS, FIRE_STATION_NUMBER);
         database.getFirestations().add(existingFireStation);
@@ -169,7 +169,7 @@ class JsonFireStationRepositoryTest {
         when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
 
         List<FireStation> foundFireStations =
-                fireStationRepository.findByStationNumber(FIRE_STATION_NUMBER.toLowerCase());
+                fireStationRepository.findByStationNumber(FIRE_STATION_NUMBER);
 
         assertNotNull(foundFireStations);
         assertEquals(
@@ -190,7 +190,7 @@ class JsonFireStationRepositoryTest {
 
         when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
 
-        List<FireStation> foundFireStations = fireStationRepository.findByStationNumber("999");
+        List<FireStation> foundFireStations = fireStationRepository.findByStationNumber(999);
 
         assertNotNull(foundFireStations);
         assertTrue(

@@ -20,9 +20,9 @@ import java.util.Optional;
 class JsonFireStationRepositoryIT extends IntegrationTestBase {
 
     private static final String EXISTING_FIRE_STATION_ADDRESS = "1509 Culver St";
-    private static final String EXISTING_FIRE_STATION_NUMBER = "3";
+    private static final Integer EXISTING_FIRE_STATION_NUMBER = 3;
     private static final String NEW_FIRE_STATION_ADDRESS = "29 15th St";
-    private static final String NEW_FIRE_STATION_NUMBER = "4";
+    private static final Integer NEW_FIRE_STATION_NUMBER = 4;
 
     @Autowired JsonFireStationRepository fireStationRepository;
 

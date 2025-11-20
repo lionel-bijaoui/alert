@@ -24,8 +24,8 @@ import java.util.Optional;
 class FireStationServiceTest {
 
     static final String EXISTING_FIRE_STATION_ADDRESS = "1509 Culver St";
-    static final String EXISTING_FIRE_STATION_NUMBER = "3";
-    static final String NEW_FIRE_STATION_NUMBER = "4";
+    static final Integer EXISTING_FIRE_STATION_NUMBER = 3;
+    static final Integer NEW_FIRE_STATION_NUMBER = 4;
     static final String NEW_FIRE_STATION_ADDRESS = "29 15th St";
 
     @Mock JsonFireStationRepository jsonFireStationRepository;
