@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayNameGeneration(TestSentenceGenerator.class)
@@ -41,7 +42,7 @@ class JsonMedicalRecordRepositoryTest {
     void save_shouldSaveMedicalRecordAndPersist_whenNewRecord() {
         MedicalRecord record = new MedicalRecord(FIRST_NAME, LAST_NAME, null, null, null);
 
-        when(jsonFileDataStore.readAll()).thenReturn(java.util.Optional.of(database));
+        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
 
         medicalRecordRepository.save(record);
 
@@ -62,7 +63,7 @@ class JsonMedicalRecordRepositoryTest {
                 new MedicalRecord(
                         FIRST_NAME, LAST_NAME, null, new ArrayList<>(List.of(NEW_MED)), null);
 
-        when(jsonFileDataStore.readAll()).thenReturn(java.util.Optional.of(database));
+        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
 
         medicalRecordRepository.save(updated);
 
@@ -83,7 +84,7 @@ class JsonMedicalRecordRepositoryTest {
         MedicalRecord medicalRecord = new MedicalRecord(FIRST_NAME, LAST_NAME, null, null, null);
         database.getMedicalrecords().add(medicalRecord);
 
-        when(jsonFileDataStore.readAll()).thenReturn(java.util.Optional.of(database));
+        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
 
         List<MedicalRecord> result = medicalRecordRepository.findAll();
 
@@ -96,7 +97,7 @@ class JsonMedicalRecordRepositoryTest {
 
     @Test
     void findAll_shouldReturnEmptyList_whenDatabaseEmpty() {
-        when(jsonFileDataStore.readAll()).thenReturn(java.util.Optional.empty());
+        when(jsonFileDataStore.readAll()).thenReturn(Optional.empty());
 
         List<MedicalRecord> result = medicalRecordRepository.findAll();
 
@@ -108,7 +109,7 @@ class JsonMedicalRecordRepositoryTest {
     @Test
     void findAll_shouldReturnEmptyList_whenDatabaseHasNullMedicalRecords() {
         database.setMedicalrecords(null);
-        when(jsonFileDataStore.readAll()).thenReturn(java.util.Optional.of(database));
+        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
 
         List<MedicalRecord> result = medicalRecordRepository.findAll();
 
@@ -122,15 +123,17 @@ class JsonMedicalRecordRepositoryTest {
         MedicalRecord medicalRecord = new MedicalRecord(FIRST_NAME, LAST_NAME, null, null, null);
         database.getMedicalrecords().add(medicalRecord);
 
-        when(jsonFileDataStore.readAll()).thenReturn(java.util.Optional.of(database));
+        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
 
-        MedicalRecord found =
+        Optional<MedicalRecord> found =
                 medicalRecordRepository.findByFirstNameAndLastName(
                         FIRST_NAME.toLowerCase(), LAST_NAME.toUpperCase());
-
-        assertNotNull(found);
-        assertEquals(FIRST_NAME, found.getFirstName());
-        assertEquals(LAST_NAME, found.getLastName());
+        found.ifPresentOrElse(
+                mr -> {
+                    assertEquals(FIRST_NAME, mr.getFirstName());
+                    assertEquals(LAST_NAME, mr.getLastName());
+                },
+                () -> fail("Medical record should be found."));
         verify(jsonFileDataStore, times(1)).readAll();
     }
 
@@ -139,11 +142,11 @@ class JsonMedicalRecordRepositoryTest {
         MedicalRecord medicalRecord = new MedicalRecord(FIRST_NAME, LAST_NAME, null, null, null);
         database.getMedicalrecords().add(medicalRecord);
 
-        when(jsonFileDataStore.readAll()).thenReturn(java.util.Optional.of(database));
+        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
 
-        MedicalRecord found = medicalRecordRepository.findByFirstNameAndLastName("Not", "Here");
-
-        assertNull(found, "No medical record should be found.");
+        Optional<MedicalRecord> found =
+                medicalRecordRepository.findByFirstNameAndLastName("Not", "Here");
+        found.ifPresent(mr -> fail("No medical record should be found."));
         verify(jsonFileDataStore, times(1)).readAll();
     }
 
@@ -152,7 +155,7 @@ class JsonMedicalRecordRepositoryTest {
         MedicalRecord medicalRecord = new MedicalRecord(FIRST_NAME, LAST_NAME, null, null, null);
         database.getMedicalrecords().add(medicalRecord);
 
-        when(jsonFileDataStore.readAll()).thenReturn(java.util.Optional.of(database));
+        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
 
         medicalRecordRepository.deleteByFirstNameAndLastName(FIRST_NAME, LAST_NAME);
 
@@ -168,7 +171,7 @@ class JsonMedicalRecordRepositoryTest {
         MedicalRecord medicalRecord = new MedicalRecord(FIRST_NAME, LAST_NAME, null, null, null);
         database.getMedicalrecords().add(medicalRecord);
 
-        when(jsonFileDataStore.readAll()).thenReturn(java.util.Optional.of(database));
+        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
 
         medicalRecordRepository.deleteByFirstNameAndLastName("Unknown", "Person");
 

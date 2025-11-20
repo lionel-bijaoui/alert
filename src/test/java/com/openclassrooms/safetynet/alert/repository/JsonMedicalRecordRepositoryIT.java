@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -59,14 +60,16 @@ class JsonMedicalRecordRepositoryIT {
 
         medicalRecordRepository.save(recordToSave);
 
-        MedicalRecord saved =
+        Optional<MedicalRecord> saved =
                 medicalRecordRepository.findByFirstNameAndLastName(NEW_FIRST_NAME, NEW_LAST_NAME);
-
-        assertNotNull(saved);
-        assertEquals(NEW_FIRST_NAME, saved.getFirstName());
-        assertEquals(NEW_LAST_NAME, saved.getLastName());
-        assertEquals(1, saved.getMedications().size());
-        assertEquals("ibuprofene:200mg", saved.getMedications().getFirst());
+        saved.ifPresentOrElse(
+                mr -> {
+                    assertEquals(NEW_FIRST_NAME, mr.getFirstName());
+                    assertEquals(NEW_LAST_NAME, mr.getLastName());
+                    assertEquals(1, mr.getMedications().size());
+                    assertEquals("ibuprofene:200mg", mr.getMedications().getFirst());
+                },
+                () -> fail("The saved medical record should be retrievable"));
     }
 
     @Test
@@ -84,13 +87,16 @@ class JsonMedicalRecordRepositoryIT {
 
     @Test
     void findByFirstNameAndLastName_shouldReturnRecordForExistingPerson() {
-        MedicalRecord found =
+        Optional<MedicalRecord> found =
                 medicalRecordRepository.findByFirstNameAndLastName(
                         EXISTING_FIRST_NAME, EXISTING_LAST_NAME);
-        assertNotNull(found);
-        assertEquals(EXISTING_FIRST_NAME, found.getFirstName());
-        assertEquals(EXISTING_LAST_NAME, found.getLastName());
-        assertTrue(found.getMedications().contains("aznol:350mg"));
-        assertEquals("nillacilan", found.getAllergies().getFirst());
+        found.ifPresentOrElse(
+                mr -> {
+                    assertEquals(EXISTING_FIRST_NAME, mr.getFirstName());
+                    assertEquals(EXISTING_LAST_NAME, mr.getLastName());
+                    assertTrue(mr.getMedications().contains("aznol:350mg"));
+                    assertEquals("nillacilan", mr.getAllergies().getFirst());
+                },
+                () -> fail("Medical record should be found."));
     }
 }

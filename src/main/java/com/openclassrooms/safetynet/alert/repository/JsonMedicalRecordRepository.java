@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /** Repository exposing medical record-related operations backed by {@link JsonFileDataStore}. */
 @Repository
@@ -20,7 +21,7 @@ public class JsonMedicalRecordRepository implements MedicalRecordRepository {
     }
 
     @Override
-    public void save(MedicalRecord item) {
+    public MedicalRecord save(MedicalRecord medicalRecord) {
         Database database =
                 jsonFileDataStore
                         .readAll()
@@ -29,18 +30,15 @@ public class JsonMedicalRecordRepository implements MedicalRecordRepository {
                                         new ArrayList<>(), new ArrayList<>(), new ArrayList<>()));
         List<MedicalRecord> medicalRecords = database.getMedicalrecords();
 
-        if (medicalRecords == null) {
-            medicalRecords = new ArrayList<>();
-        }
-
         medicalRecords.removeIf(
                 mr ->
-                        mr.getFirstName().equalsIgnoreCase(item.getFirstName())
-                                && mr.getLastName().equalsIgnoreCase(item.getLastName()));
-        medicalRecords.add(item);
+                        mr.getFirstName().equalsIgnoreCase(medicalRecord.getFirstName())
+                                && mr.getLastName().equalsIgnoreCase(medicalRecord.getLastName()));
+        medicalRecords.add(medicalRecord);
 
         database.setMedicalrecords(medicalRecords);
         jsonFileDataStore.writeAll(database);
+        return medicalRecord;
     }
 
     @Override
@@ -52,14 +50,13 @@ public class JsonMedicalRecordRepository implements MedicalRecordRepository {
     }
 
     @Override
-    public MedicalRecord findByFirstNameAndLastName(String firstName, String lastName) {
+    public Optional<MedicalRecord> findByFirstNameAndLastName(String firstName, String lastName) {
         return findAll().stream()
                 .filter(
                         mr ->
                                 mr.getFirstName().equalsIgnoreCase(firstName)
                                         && mr.getLastName().equalsIgnoreCase(lastName))
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
 
     @Override
@@ -71,10 +68,6 @@ public class JsonMedicalRecordRepository implements MedicalRecordRepository {
                                 new Database(
                                         new ArrayList<>(), new ArrayList<>(), new ArrayList<>()));
         List<MedicalRecord> medicalRecords = database.getMedicalrecords();
-
-        if (medicalRecords == null) {
-            medicalRecords = new ArrayList<>();
-        }
 
         medicalRecords.removeIf(
                 mr ->
