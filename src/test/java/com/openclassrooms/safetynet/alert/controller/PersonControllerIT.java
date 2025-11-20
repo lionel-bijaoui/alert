@@ -6,7 +6,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openclassrooms.safetynet.alert.dto.PersonDTO;
-import com.openclassrooms.safetynet.alert.store.JsonFileDataStore;
 import com.openclassrooms.safetynet.alert.utils.IntegrationTestBase;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
