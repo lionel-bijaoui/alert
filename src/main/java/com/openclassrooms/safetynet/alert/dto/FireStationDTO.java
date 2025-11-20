@@ -1,5 +1,6 @@
 package com.openclassrooms.safetynet.alert.dto;
 
-import org.springframework.lang.NonNull;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
-public record FireStationDTO(@NonNull String address, int station) {}
+public record FireStationDTO(@NotBlank String address, @NotNull int station) {}
