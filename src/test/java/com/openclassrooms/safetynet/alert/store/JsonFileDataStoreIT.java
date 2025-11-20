@@ -8,9 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.openclassrooms.safetynet.alert.model.Database;
 import com.openclassrooms.safetynet.alert.model.Person;
+import com.openclassrooms.safetynet.alert.utils.IntegrationTestBase;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,21 +26,12 @@ import java.util.Optional;
 @SpringBootTest
 @ActiveProfiles("test")
 @DisplayNameGeneration(TestSentenceGenerator.class)
-public class JsonFileDataStoreIT {
+public class JsonFileDataStoreIT extends IntegrationTestBase {
 
     @Autowired JsonFileDataStore store;
 
-    @AfterEach
-    void cleanup() throws Exception {
-        Path currentPath = Path.of(store.current());
-        if (Files.exists(currentPath)) {
-            Files.delete(currentPath);
-        }
-    }
-
     @Test
     void load_shouldMakeCurrentFileReadable() throws IOException {
-        store.load();
 
         Path currentPath = Path.of(store.current());
 
@@ -62,7 +53,6 @@ public class JsonFileDataStoreIT {
 
     @Test
     void writeAll_shouldPersistChanges_andBeReadableAfterWrite() {
-        store.load();
 
         // Prepare a minimal database with a single person
         Database newDb =

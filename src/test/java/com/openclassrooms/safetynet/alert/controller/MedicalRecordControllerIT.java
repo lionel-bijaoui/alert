@@ -6,11 +6,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openclassrooms.safetynet.alert.dto.MedicalRecordDTO;
-import com.openclassrooms.safetynet.alert.store.JsonFileDataStore;
+import com.openclassrooms.safetynet.alert.utils.IntegrationTestBase;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +18,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
@@ -29,24 +25,10 @@ import java.util.ArrayList;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @DisplayNameGeneration(TestSentenceGenerator.class)
-public class MedicalRecordControllerIT {
+public class MedicalRecordControllerIT extends IntegrationTestBase {
 
-    @Autowired JsonFileDataStore store;
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
-
-    @BeforeEach
-    void setup() {
-        store.load();
-    }
-
-    @AfterEach
-    void cleanup() throws Exception {
-        Path current = Path.of(store.current());
-        if (Files.exists(current)) {
-            Files.delete(current);
-        }
-    }
 
     @Test
     void addMedicalRecord_shouldReturnCreated_whenRecordIsCreated() throws Exception {

@@ -3,7 +3,7 @@ package com.openclassrooms.safetynet.alert.repository;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.openclassrooms.safetynet.alert.model.Person;
-import com.openclassrooms.safetynet.alert.store.JsonFileDataStore;
+import com.openclassrooms.safetynet.alert.utils.IntegrationTestBase;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.*;
@@ -11,15 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
 @SpringBootTest
 @ActiveProfiles("test")
 @DisplayNameGeneration(TestSentenceGenerator.class)
-public class JsonPersonsRepositoryIT {
+public class JsonPersonsRepositoryIT extends IntegrationTestBase {
 
     static final String PERSON_FIRST_NAME = "John";
     static final String PERSON_LAST_NAME = "Doe";
@@ -30,20 +28,6 @@ public class JsonPersonsRepositoryIT {
     static final String PERSON_EMAIL = "john.doe@email.com";
 
     @Autowired private JsonPersonRepository personsRepository;
-    @Autowired private JsonFileDataStore store;
-
-    @BeforeEach
-    void setup() {
-        store.load();
-    }
-
-    @AfterEach
-    void cleanup() throws Exception {
-        Path current = Path.of(store.current());
-        if (Files.exists(current)) {
-            Files.delete(current);
-        }
-    }
 
     @Test
     @DisplayName("save should save person and return it when new person")

@@ -5,7 +5,7 @@ package com.openclassrooms.safetynet.alert.repository;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.openclassrooms.safetynet.alert.model.MedicalRecord;
-import com.openclassrooms.safetynet.alert.store.JsonFileDataStore;
+import com.openclassrooms.safetynet.alert.utils.IntegrationTestBase;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.*;
@@ -13,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -23,7 +21,7 @@ import java.util.Optional;
 @SpringBootTest
 @ActiveProfiles("test")
 @DisplayNameGeneration(TestSentenceGenerator.class)
-class JsonMedicalRecordRepositoryIT {
+class JsonMedicalRecordRepositoryIT extends IntegrationTestBase {
 
     private static final String EXISTING_FIRST_NAME = "John";
     private static final String EXISTING_LAST_NAME = "Doe";
@@ -31,20 +29,6 @@ class JsonMedicalRecordRepositoryIT {
     private static final String NEW_LAST_NAME = "Smith";
 
     @Autowired JsonMedicalRecordRepository medicalRecordRepository;
-    @Autowired JsonFileDataStore store;
-
-    @BeforeEach
-    void setup() {
-        store.load();
-    }
-
-    @AfterEach
-    void cleanup() throws Exception {
-        Path current = Path.of(store.current());
-        if (Files.exists(current)) {
-            Files.delete(current);
-        }
-    }
 
     @Test
     @DisplayName("save should persist a new medical record and make it retrievable")

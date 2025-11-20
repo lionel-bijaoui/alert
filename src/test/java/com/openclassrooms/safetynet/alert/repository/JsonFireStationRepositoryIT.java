@@ -3,7 +3,7 @@ package com.openclassrooms.safetynet.alert.repository;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.openclassrooms.safetynet.alert.model.FireStation;
-import com.openclassrooms.safetynet.alert.store.JsonFileDataStore;
+import com.openclassrooms.safetynet.alert.utils.IntegrationTestBase;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.*;
@@ -11,15 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
 @SpringBootTest
 @ActiveProfiles("test")
 @DisplayNameGeneration(TestSentenceGenerator.class)
-class JsonFireStationRepositoryIT {
+class JsonFireStationRepositoryIT extends IntegrationTestBase {
 
     private static final String EXISTING_FIRE_STATION_ADDRESS = "1509 Culver St";
     private static final String EXISTING_FIRE_STATION_NUMBER = "3";
@@ -27,20 +25,6 @@ class JsonFireStationRepositoryIT {
     private static final String NEW_FIRE_STATION_NUMBER = "4";
 
     @Autowired JsonFireStationRepository fireStationRepository;
-    @Autowired JsonFileDataStore store;
-
-    @BeforeEach
-    void setup() {
-        store.load();
-    }
-
-    @AfterEach
-    void cleanup() throws Exception {
-        Path current = Path.of(store.current());
-        if (Files.exists(current)) {
-            Files.delete(current);
-        }
-    }
 
     @Test
     void save_shouldPersistFireStation_whenNewFireStation() {

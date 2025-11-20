@@ -4,19 +4,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.openclassrooms.safetynet.alert.model.MedicalRecord;
 import com.openclassrooms.safetynet.alert.repository.MedicalRecordRepository;
-import com.openclassrooms.safetynet.alert.store.JsonFileDataStore;
+import com.openclassrooms.safetynet.alert.utils.IntegrationTestBase;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -25,7 +21,7 @@ import java.util.Optional;
 @SpringBootTest
 @ActiveProfiles("test")
 @DisplayNameGeneration(TestSentenceGenerator.class)
-class MedicalRecordServiceIT {
+class MedicalRecordServiceIT extends IntegrationTestBase {
 
     private static final String EXISTING_FIRST_NAME = "John";
     private static final String EXISTING_LAST_NAME = "Doe";
@@ -35,21 +31,7 @@ class MedicalRecordServiceIT {
     private static final String NEW_BIRTHDATE = "01/01/1990";
 
     @Autowired private MedicalRecordService medicalRecordService;
-    @Autowired private JsonFileDataStore store;
     @Autowired private MedicalRecordRepository medicalRecordRepository;
-
-    @BeforeEach
-    void setup() {
-        store.load();
-    }
-
-    @AfterEach
-    void cleanup() throws Exception {
-        Path current = Path.of(store.current());
-        if (Files.exists(current)) {
-            Files.delete(current);
-        }
-    }
 
     @Test
     void addMedicalRecord_shouldPersistAndReturn_whenNew() throws Exception {
