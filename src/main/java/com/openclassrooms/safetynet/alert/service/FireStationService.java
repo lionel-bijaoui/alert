@@ -62,4 +62,13 @@ public class FireStationService {
                 .map(FireStation::getAddress)
                 .toList();
     }
+
+    public Integer getFireStationNumberByAddress(String address) {
+        Optional<FireStation> maybeFireStation = jsonFireStationRepository.findByAddress(address);
+        if (maybeFireStation.isPresent()) {
+            return maybeFireStation.get().getStation();
+        } else {
+            throw new ResourceNotFoundException("No fire station found for address: " + address);
+        }
+    }
 }

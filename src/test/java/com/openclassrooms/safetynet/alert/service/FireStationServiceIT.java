@@ -92,4 +92,14 @@ class FireStationServiceIT extends IntegrationTestBase {
                 "Addresses list should contain the existing fire station address");
     }
 
+    @Test
+    void getFireStationNumberByAddress_shouldReturnStationNumber_whenExisting() {
+        int stationNumber =
+                fireStationService.getFireStationNumberByAddress(EXISTING_FIRE_STATION_ADDRESS);
+
+        assertEquals(
+                EXISTING_FIRE_STATION_NUMBER,
+                stationNumber,
+                "The returned station number should match the existing one");
+    }
 }

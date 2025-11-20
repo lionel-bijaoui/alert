@@ -168,4 +168,31 @@ class FireStationServiceTest {
         verify(jsonFireStationRepository, times(1)).findByStationNumber(NEW_FIRE_STATION_NUMBER);
     }
 
+    @Test
+    void getFireStationNumberByAddress_shouldReturnStationNumber_whenExists() {
+        when(jsonFireStationRepository.findByAddress(EXISTING_FIRE_STATION_ADDRESS))
+                .thenReturn(Optional.of(existingFireStation));
+
+        int result =
+                fireStationService.getFireStationNumberByAddress(EXISTING_FIRE_STATION_ADDRESS);
+
+        assertEquals(
+                EXISTING_FIRE_STATION_NUMBER,
+                result,
+                "The returned station number should match the existing one");
+
+        verify(jsonFireStationRepository, times(1)).findByAddress(EXISTING_FIRE_STATION_ADDRESS);
+    }
+
+    @Test
+    void getFireStationNumberByAddress_shouldThrowResourceNotFoundException_whenNotExists() {
+        when(jsonFireStationRepository.findByAddress(NEW_FIRE_STATION_ADDRESS))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> fireStationService.getFireStationNumberByAddress(NEW_FIRE_STATION_ADDRESS));
+
+        verify(jsonFireStationRepository, times(1)).findByAddress(NEW_FIRE_STATION_ADDRESS);
+    }
 }
