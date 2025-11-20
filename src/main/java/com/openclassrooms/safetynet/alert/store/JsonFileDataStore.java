@@ -4,7 +4,11 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openclassrooms.safetynet.alert.model.Database;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -19,6 +23,8 @@ import java.util.Optional;
 public class JsonFileDataStore {
 
     private static final ObjectMapper mapper;
+
+    private static final Logger logger = LogManager.getLogger(JsonFileDataStore.class);
 
     // Static initializer to configure the ObjectMapper
     static {
@@ -54,6 +60,7 @@ public class JsonFileDataStore {
 
     /** Ensure the current file exists by copying the initial file if needed. */
     public void load() {
+        logger.debug("Loading data from {}", initial);
         Path currentPath = Path.of(current);
         Path initialPath = Path.of(initial);
         try {
@@ -66,6 +73,13 @@ public class JsonFileDataStore {
         } catch (IOException e) {
             throw new RuntimeException("Failed to load JSON file", e);
         }
+    }
+
+    /** Load the data store when the application is ready. */
+    @EventListener(ApplicationReadyEvent.class)
+    public void onApplicationReady() {
+        logger.info("Initializing data store...");
+        load();
     }
 
     /**
