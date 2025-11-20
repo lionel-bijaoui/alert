@@ -78,4 +78,18 @@ class FireStationServiceIT extends IntegrationTestBase {
                 fireStationRepository.findByAddress(EXISTING_FIRE_STATION_ADDRESS);
         assertTrue(after.isEmpty(), "The fire station should be removed from the repository");
     }
+
+    @Test
+    void getFireStationAddressListByFireStationNumber_shouldReturnAddresses_whenExisting() {
+        var addresses =
+                fireStationService.getFireStationAddressListByFireStationNumber(
+                        EXISTING_FIRE_STATION_NUMBER);
+
+        assertNotNull(addresses);
+        assertFalse(addresses.isEmpty(), "Addresses list should not be empty");
+        assertTrue(
+                addresses.contains(EXISTING_FIRE_STATION_ADDRESS),
+                "Addresses list should contain the existing fire station address");
+    }
+
 }

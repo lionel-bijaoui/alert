@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 /** Service class for managing FireStation entities. */
@@ -54,5 +55,11 @@ public class FireStationService {
                     "No existing fire station to delete at address: " + address);
         }
         jsonFireStationRepository.deleteByAddress(address);
+    }
+
+    public List<String> getFireStationAddressListByFireStationNumber(Integer stationNumber) {
+        return jsonFireStationRepository.findByStationNumber(stationNumber).stream()
+                .map(FireStation::getAddress)
+                .toList();
     }
 }

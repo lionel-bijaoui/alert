@@ -17,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
@@ -130,4 +131,41 @@ class FireStationServiceTest {
         verify(jsonFireStationRepository, times(1)).findByAddress(NEW_FIRE_STATION_ADDRESS);
         verify(jsonFireStationRepository, never()).deleteByAddress(any());
     }
+
+    @Test
+    void getFireStationAddressListByFireStationNumber_shouldReturnAddressList_whenExists() {
+        FireStation fireStation1 = new FireStation("Address 1", EXISTING_FIRE_STATION_NUMBER);
+        FireStation fireStation2 = new FireStation("Address 2", EXISTING_FIRE_STATION_NUMBER);
+
+        when(jsonFireStationRepository.findByStationNumber(EXISTING_FIRE_STATION_NUMBER))
+                .thenReturn(List.of(fireStation1, fireStation2));
+
+        List<String> result =
+                fireStationService.getFireStationAddressListByFireStationNumber(
+                        EXISTING_FIRE_STATION_NUMBER);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertTrue(result.contains("Address 1"));
+        assertTrue(result.contains("Address 2"));
+
+        verify(jsonFireStationRepository, times(1))
+                .findByStationNumber(EXISTING_FIRE_STATION_NUMBER);
+    }
+
+    @Test
+    void getFireStationAddressListByFireStationNumber_shouldReturnEmptyList_whenNoneExists() {
+        when(jsonFireStationRepository.findByStationNumber(NEW_FIRE_STATION_NUMBER))
+                .thenReturn(List.of());
+
+        List<String> result =
+                fireStationService.getFireStationAddressListByFireStationNumber(
+                        NEW_FIRE_STATION_NUMBER);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(jsonFireStationRepository, times(1)).findByStationNumber(NEW_FIRE_STATION_NUMBER);
+    }
+
 }
