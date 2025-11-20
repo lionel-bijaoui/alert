@@ -195,4 +195,41 @@ class FireStationServiceTest {
 
         verify(jsonFireStationRepository, times(1)).findByAddress(NEW_FIRE_STATION_ADDRESS);
     }
+
+    @Test
+    void getFireStationListByFireStationNumberList_shouldReturnFireStationList_whenExists() {
+        FireStation fireStation1 = new FireStation("Address 1", EXISTING_FIRE_STATION_NUMBER);
+        FireStation fireStation2 = new FireStation("Address 2", NEW_FIRE_STATION_NUMBER);
+        List<Integer> stationNumbers =
+                List.of(EXISTING_FIRE_STATION_NUMBER, NEW_FIRE_STATION_NUMBER);
+
+        when(jsonFireStationRepository.findAll())
+                .thenReturn(List.of(existingFireStation, fireStation1, fireStation2));
+
+        List<FireStation> result =
+                fireStationService.getFireStationListByFireStationNumberList(stationNumbers);
+
+        assertNotNull(result);
+        assertEquals(3, result.size());
+        assertTrue(result.contains(existingFireStation));
+        assertTrue(result.contains(fireStation1));
+        assertTrue(result.contains(fireStation2));
+
+        verify(jsonFireStationRepository, times(1)).findAll();
+    }
+
+    @Test
+    void getFireStationListByFireStationNumberList_shouldReturnEmptyList_whenNoneExists() {
+        List<Integer> stationNumbers = List.of(99, 100);
+
+        when(jsonFireStationRepository.findAll()).thenReturn(List.of(existingFireStation));
+
+        List<FireStation> result =
+                fireStationService.getFireStationListByFireStationNumberList(stationNumbers);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(jsonFireStationRepository, times(1)).findAll();
+    }
 }

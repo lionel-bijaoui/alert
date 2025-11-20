@@ -71,4 +71,11 @@ public class FireStationService {
             throw new ResourceNotFoundException("No fire station found for address: " + address);
         }
     }
+
+    public List<FireStation> getFireStationListByFireStationNumberList(
+            List<Integer> stationNumberList) {
+        return jsonFireStationRepository.findAll().stream()
+                .filter(fs -> stationNumberList.contains(fs.getStation()))
+                .toList();
+    }
 }

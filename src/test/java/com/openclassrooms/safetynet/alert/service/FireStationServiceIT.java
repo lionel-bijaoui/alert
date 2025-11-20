@@ -102,4 +102,23 @@ class FireStationServiceIT extends IntegrationTestBase {
                 stationNumber,
                 "The returned station number should match the existing one");
     }
+
+    @Test
+    void getFireStationListByFireStationNumberList_shouldReturnFireStations_whenExisting() {
+        var stationNumbers = List.of(EXISTING_FIRE_STATION_NUMBER, NEW_FIRE_STATION_NUMBER);
+
+        var fireStations =
+                fireStationService.getFireStationListByFireStationNumberList(stationNumbers);
+
+        assertNotNull(fireStations);
+        assertFalse(fireStations.isEmpty(), "Fire stations list should not be empty");
+        assertTrue(
+                fireStations.stream()
+                        .anyMatch(
+                                fs ->
+                                        fs.getAddress().equals(EXISTING_FIRE_STATION_ADDRESS)
+                                                && fs.getStation()
+                                                        .equals(EXISTING_FIRE_STATION_NUMBER)),
+                "Fire stations list should contain the existing fire station");
+    }
 }
