@@ -18,7 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 @SpringBootTest
@@ -26,6 +26,10 @@ import java.util.ArrayList;
 @ActiveProfiles("test")
 @DisplayNameGeneration(TestSentenceGenerator.class)
 public class MedicalRecordControllerIT extends IntegrationTestBase {
+
+    private static final String DATE = "1989-10-15";
+    private static final String FIRST_NAME = "John";
+    private static final String LAST_NAME = "Doe";
 
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
@@ -36,7 +40,7 @@ public class MedicalRecordControllerIT extends IntegrationTestBase {
                 new MedicalRecordDTO(
                         "Alice",
                         "Walker",
-                        new SimpleDateFormat("dd/MM/yyyy").parse("15/10/1989"),
+                        LocalDate.parse(DATE),
                         new ArrayList<>(),
                         new ArrayList<>());
 
@@ -53,9 +57,9 @@ public class MedicalRecordControllerIT extends IntegrationTestBase {
     void updateMedicalRecord_shouldReturnUpdated_whenRecordIsUpdated() throws Exception {
         MedicalRecordDTO dto =
                 new MedicalRecordDTO(
-                        "John",
-                        "Doe",
-                        new SimpleDateFormat("dd/MM/yyyy").parse("15/10/1989"),
+                        FIRST_NAME,
+                        LAST_NAME,
+                        LocalDate.parse(DATE),
                         new ArrayList<>(),
                         new ArrayList<>());
 
@@ -70,13 +74,10 @@ public class MedicalRecordControllerIT extends IntegrationTestBase {
 
     @Test
     void deleteMedicalRecord_shouldReturnOk_whenRecordIsDeleted() throws Exception {
-        String firstName = "John";
-        String lastName = "Doe";
-
         mockMvc.perform(
                         delete("/medicalRecord")
-                                .param("firstName", firstName)
-                                .param("lastName", lastName))
+                                .param("firstName", FIRST_NAME)
+                                .param("lastName", LAST_NAME))
                 .andExpect(status().isOk());
     }
 }

@@ -13,8 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,14 +27,14 @@ class MedicalRecordServiceIT extends IntegrationTestBase {
 
     private static final String NEW_FIRST_NAME = "Alice";
     private static final String NEW_LAST_NAME = "Zephyr";
-    private static final String NEW_BIRTHDATE = "01/01/1990";
+    private static final String NEW_BIRTHDATE = "1990-01-01";
 
     @Autowired private MedicalRecordService medicalRecordService;
     @Autowired private MedicalRecordRepository medicalRecordRepository;
 
     @Test
-    void addMedicalRecord_shouldPersistAndReturn_whenNew() throws Exception {
-        Date newBirth = new SimpleDateFormat("dd/MM/yyyy").parse(NEW_BIRTHDATE);
+    void addMedicalRecord_shouldPersistAndReturn_whenNew() {
+        LocalDate newBirth = LocalDate.parse(NEW_BIRTHDATE);
 
         MedicalRecord toAdd =
                 new MedicalRecord(
@@ -61,7 +60,7 @@ class MedicalRecordServiceIT extends IntegrationTestBase {
     }
 
     @Test
-    void updateMedicalRecord_shouldPersistUpdate_whenExisting() throws Exception {
+    void updateMedicalRecord_shouldPersistUpdate_whenExisting() {
         Optional<MedicalRecord> before =
                 medicalRecordRepository.findByFirstNameAndLastName(
                         EXISTING_FIRST_NAME, EXISTING_LAST_NAME);
@@ -69,7 +68,7 @@ class MedicalRecordServiceIT extends IntegrationTestBase {
                 before.isPresent(),
                 "Precondition: existing medical record should be present in fixture");
 
-        Date newBirth = new SimpleDateFormat("dd/MM/yyyy").parse(NEW_BIRTHDATE);
+        LocalDate newBirth = LocalDate.parse(NEW_BIRTHDATE);
 
         MedicalRecord updated =
                 new MedicalRecord(

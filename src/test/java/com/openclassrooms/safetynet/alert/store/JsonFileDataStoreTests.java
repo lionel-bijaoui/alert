@@ -3,6 +3,9 @@ package com.openclassrooms.safetynet.alert.store;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.openclassrooms.safetynet.alert.model.Database;
 import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
@@ -28,18 +31,21 @@ import java.util.Optional;
 @DisplayNameGeneration(TestSentenceGenerator.class)
 public class JsonFileDataStoreTests {
 
-    final String currentPathStr = "target/current.json";
-    final String initialPathStr = "src/test/resources/initial.json";
+    private final String currentPathStr = "target/current.json";
+    private final String initialPathStr = "src/test/resources/initial.json";
 
-    JsonFileDataStore store;
+    private @Mock FilesOperations fileOperations;
 
-    @Mock FilesOperations fileOperations;
+    private @TempDir Path tempDirectory;
 
-    @TempDir Path tempDirectory;
+    private JsonFileDataStore store;
 
     @BeforeEach
     void setup() {
-        store = new JsonFileDataStore(currentPathStr, initialPathStr, fileOperations);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        store = new JsonFileDataStore(mapper, currentPathStr, initialPathStr, fileOperations);
     }
 
     @Test
@@ -61,9 +67,41 @@ public class JsonFileDataStoreTests {
     @Test
     void readAll_shouldReturnDatabase_whenCurrentFilePresent() throws Exception {
         String json =
-                "{"
-                        + "\"persons\":[{\"firstName\":\"John\",\"lastName\":\"Doe\"}],"
-                        + "\"firestations\":[{\"station\":1}],\"medicalrecords\":[{\"record\":1}]}";
+"""
+{
+  "persons": [
+     {
+       "firstName": "John",
+       "lastName": "Doe",
+       "address": "1509 Culver St",
+       "city": "Culver",
+       "zip": "97451",
+       "phone": "841-874-6512",
+       "email": "johndoe@email.com"
+     }
+   ],
+   "firestations": [
+     {
+       "address": "1509 Culver St",
+       "station": "3"
+     }
+   ],
+   "medicalrecords": [
+     {
+       "firstName": "John",
+       "lastName": "Doe",
+       "birthdate": "03/18/1984",
+       "medications": [
+         "aznol:350mg",
+         "hydrapermazol:100mg"
+       ],
+       "allergies": [
+         "nillacilan"
+       ]
+     }
+   ]
+}
+""";
         Path textFile = tempDirectory.resolve("current.json");
         Files.writeString(textFile, json, StandardCharsets.UTF_8);
         File jsonFile = textFile.toFile();
@@ -89,11 +127,20 @@ public class JsonFileDataStoreTests {
 
     @Test
     void writeAll_shouldPreserveDatabase_whenWritingSameDatabase() {
-        List<Person> persons = new ArrayList<>();
-        Person person =
-                new Person("John", "Boyd", "1509 Culver St", "Culver", "97451", "841-874-6512", "");
-        persons.add(person);
-        Database database = new Database(persons, new ArrayList<>(), new ArrayList<>());
+        Database database =
+                new Database(
+                        new ArrayList<>(
+                                List.of(
+                                        new Person(
+                                                "John",
+                                                "Boyd",
+                                                "1509 Culver St",
+                                                "Culver",
+                                                "97451",
+                                                "841-874-6512",
+                                                "johnboyd@email.com"))),
+                        new ArrayList<>(),
+                        new ArrayList<>());
 
         File jsonFile = tempDirectory.resolve("current.json").toFile();
         when(fileOperations.getFile(any(String.class))).thenReturn(jsonFile);

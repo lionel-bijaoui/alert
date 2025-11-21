@@ -1,6 +1,5 @@
 package com.openclassrooms.safetynet.alert.store;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openclassrooms.safetynet.alert.model.Database;
 
@@ -15,25 +14,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.text.SimpleDateFormat;
 import java.util.Optional;
 
 /** Component responsible for loading and persisting the application's JSON database file. */
 @Log4j2
 @Component
 public class JsonFileDataStore {
-
-    private static final ObjectMapper mapper;
-
-    // Static initializer to configure the ObjectMapper
-    static {
-        mapper = new ObjectMapper();
-        // Use the date format "dd/MM/yyyy" for serialization and deserialization
-        mapper.setDateFormat(new SimpleDateFormat("dd/MM/yyyy"));
-        // Ignore unknown properties during deserialization
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
-
     /** Path to the initial JSON file. */
     private final String initial;
 
@@ -43,10 +29,15 @@ public class JsonFileDataStore {
     /** Abstraction for file operations to facilitate testing. */
     private final FilesOperations fileOperations;
 
+    /** ObjectMapper instance for JSON serialization/deserialization. */
+    private final ObjectMapper objectMapper;
+
     public JsonFileDataStore(
+        ObjectMapper objectMapper,
             @Value("${data.store.path.current}") String current,
             @Value("${data.store.path.initial}") String initial,
             FilesOperations fileOperations) {
+        this.objectMapper = objectMapper;
         this.current = current;
         this.initial = initial;
         this.fileOperations = fileOperations;
@@ -92,7 +83,7 @@ public class JsonFileDataStore {
 
             if (jsonFile.exists() && jsonFile.isFile() && jsonFile.length() > 0) {
                 // JSON file exists and is not empty
-                Database db = mapper.readValue(jsonFile, Database.class);
+                Database db = objectMapper.readValue(jsonFile, Database.class);
                 return Optional.ofNullable(db);
             } else {
                 return Optional.empty();
@@ -109,7 +100,7 @@ public class JsonFileDataStore {
      */
     public void writeAll(Database database) {
         try {
-            mapper.writeValue(fileOperations.getFile(current), database);
+            objectMapper.writeValue(fileOperations.getFile(current), database);
         } catch (IOException e) {
             throw new RuntimeException("Failed to write JSON file", e);
         }

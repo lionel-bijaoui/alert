@@ -22,13 +22,15 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 @WebMvcTest(MedicalRecordController.class)
 @DisplayNameGeneration(TestSentenceGenerator.class)
 class MedicalRecordControllerTest {
+
+    private static final String FIRST_NAME = "John";
+    private static final String LAST_NAME = "Doe";
 
     @Autowired MockMvc mockMvc;
 
@@ -42,12 +44,12 @@ class MedicalRecordControllerTest {
     MedicalRecord entity;
 
     @BeforeEach
-    void setUp() throws ParseException {
+    void setUp() {
         dto =
                 new MedicalRecordDTO(
-                        "John",
-                        "Doe",
-                        new SimpleDateFormat("dd/MM/yyyy").parse("15/10/1989"),
+                        FIRST_NAME,
+                        LAST_NAME,
+                        LocalDate.parse("1989-10-15"),
                         new ArrayList<>(),
                         new ArrayList<>());
         entity =
@@ -79,8 +81,7 @@ class MedicalRecordControllerTest {
     @Test
     void addMedicalRecord_shouldReturnConflict_whenRecordExists() throws Exception {
         when(medicalRecordMapper.toEntity(dto)).thenReturn(entity);
-        when(medicalRecordService.addMedicalRecord(entity))
-                .thenThrow(new ConflictException("exists"));
+        when(medicalRecordService.addMedicalRecord(entity)).thenThrow(new ConflictException());
 
         mockMvc.perform(
                         post("/medicalRecord")
@@ -144,7 +145,7 @@ class MedicalRecordControllerTest {
 
         when(medicalRecordMapper.toEntity(updatedDto)).thenReturn(updatedEntity);
         when(medicalRecordService.updateMedicalRecord(updatedEntity))
-                .thenThrow(new ResourceNotFoundException("not found"));
+                .thenThrow(new ResourceNotFoundException());
 
         mockMvc.perform(
                         put("/medicalRecord")
@@ -159,15 +160,15 @@ class MedicalRecordControllerTest {
 
     @Test
     void deleteMedicalRecord_shouldReturnOk_whenDeleted() throws Exception {
-        doNothing().when(medicalRecordService).deleteMedicalRecord("John", "Doe");
+        doNothing().when(medicalRecordService).deleteMedicalRecord(FIRST_NAME, LAST_NAME);
 
         mockMvc.perform(
                         delete("/medicalRecord")
-                                .param("firstName", "John")
-                                .param("lastName", "Doe"))
+                                .param("firstName", FIRST_NAME)
+                                .param("lastName", LAST_NAME))
                 .andExpect(status().isOk());
 
-        verify(medicalRecordService, times(1)).deleteMedicalRecord("John", "Doe");
+        verify(medicalRecordService, times(1)).deleteMedicalRecord(FIRST_NAME, LAST_NAME);
     }
 
     @Test
