@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openclassrooms.safetynet.alert.model.Database;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -19,12 +19,11 @@ import java.text.SimpleDateFormat;
 import java.util.Optional;
 
 /** Component responsible for loading and persisting the application's JSON database file. */
+@Log4j2
 @Component
 public class JsonFileDataStore {
 
     private static final ObjectMapper mapper;
-
-    private static final Logger logger = LogManager.getLogger(JsonFileDataStore.class);
 
     // Static initializer to configure the ObjectMapper
     static {
@@ -60,7 +59,7 @@ public class JsonFileDataStore {
 
     /** Ensure the current file exists by copying the initial file if needed. */
     public void load() {
-        logger.debug("Loading data from {}", initial);
+        log.debug("Loading data from {}", initial);
         Path currentPath = Path.of(current);
         Path initialPath = Path.of(initial);
         try {
@@ -78,7 +77,7 @@ public class JsonFileDataStore {
     /** Load the data store when the application is ready. */
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationReady() {
-        logger.info("Initializing data store...");
+        log.info("Initializing data store...");
         load();
     }
 
