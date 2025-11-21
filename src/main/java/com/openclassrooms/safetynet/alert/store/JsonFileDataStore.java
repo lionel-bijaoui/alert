@@ -3,7 +3,7 @@ package com.openclassrooms.safetynet.alert.store;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openclassrooms.safetynet.alert.model.Database;
 
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -17,7 +17,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 
 /** Component responsible for loading and persisting the application's JSON database file. */
-@Log4j2
+@Slf4j
 @Component
 public class JsonFileDataStore {
     /** Path to the initial JSON file. */
