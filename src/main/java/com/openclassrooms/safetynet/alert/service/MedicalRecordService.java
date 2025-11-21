@@ -9,6 +9,8 @@ import jakarta.validation.constraints.NotNull;
 
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.Optional;
 
 /** Service class for managing medical records. */
@@ -68,10 +70,16 @@ public class MedicalRecordService {
     public MedicalRecord getMedicalRecordByFullName(String firstName, String lastName) {
         Optional<MedicalRecord> maybeMedicalRecord =
                 medicalRecordRepository.findByFirstNameAndLastName(firstName, lastName);
-        if (maybeMedicalRecord.isPresent()) {
-            return maybeMedicalRecord.get();
+        return maybeMedicalRecord.orElse(null);
+    }
+
+    public Integer calculateAgeFromBirthdate(LocalDate birthdate) {
+        LocalDate currentDate = LocalDate.now();
+        if ((birthdate != null)
+                && (birthdate.isBefore(currentDate) || birthdate.isEqual(currentDate))) {
+            return Period.between(birthdate, currentDate).getYears();
         } else {
-            throw new ResourceNotFoundException("Medical record does not exist");
+            throw new IllegalArgumentException("Birthdate is invalid " + birthdate);
         }
     }
 }

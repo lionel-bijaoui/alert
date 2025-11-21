@@ -1,7 +1,6 @@
 package com.openclassrooms.safetynet.alert.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import com.openclassrooms.safetynet.alert.exception.ConflictException;
@@ -18,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -171,10 +171,28 @@ class MedicalRecordServiceTest {
         when(medicalRecordRepository.findByFirstNameAndLastName("No", "Body"))
                 .thenReturn(Optional.empty());
 
-        assertThrows(
-                ResourceNotFoundException.class,
-                () -> medicalRecordService.getMedicalRecordByFullName("No", "Body"));
+        MedicalRecord found = medicalRecordService.getMedicalRecordByFullName("No", "Body");
 
+        assertNull(found);
         verify(medicalRecordRepository, times(1)).findByFirstNameAndLastName("No", "Body");
+    }
+
+    @Test
+    void calculateAgeFromBirthdate_shouldReturnCorrectAge_whenBirthdateIsCorrect() {
+        LocalDate birthdate = LocalDate.now().minusYears(25);
+
+        Integer age = medicalRecordService.calculateAgeFromBirthdate(birthdate);
+
+        assertNotNull(age);
+        assertEquals(25, age);
+    }
+
+    @Test
+    void calculateAgeFromBirthdate_shouldThrow_whenBirthdateIsIncorrect() {
+        LocalDate futureBirthdate = LocalDate.now().plusYears(5);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> medicalRecordService.calculateAgeFromBirthdate(futureBirthdate));
     }
 }
