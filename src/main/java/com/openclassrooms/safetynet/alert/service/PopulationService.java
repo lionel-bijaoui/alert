@@ -34,4 +34,10 @@ public class PopulationService {
                 .filter(person -> person.getCity().equalsIgnoreCase(city))
                 .toList();
     }
+
+    public List<Person> getPersonListByLastName(String lastName) {
+        return jsonPersonRepository.findAll().stream()
+                .filter(person -> person.getLastName().equalsIgnoreCase(lastName))
+                .toList();
+    }
 }

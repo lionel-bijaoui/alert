@@ -125,4 +125,23 @@ public class PopulationServiceTest {
 
         assertTrue(result.isEmpty());
     }
+
+    @Test
+    void getPersonListByLastName_shouldReturnPersonList_whenLastNameProvided() {
+        when(jsonPersonRepository.findAll()).thenReturn(List.of(personA, personB));
+
+        List<Person> result = populationService.getPersonListByLastName(PERSON_B_LAST_NAME);
+
+        assertEquals(1, result.size());
+        assertTrue(result.contains(personB));
+    }
+
+    @Test
+    void getPersonListByLastName_shouldReturnEmptyList_whenNoMatchingLastName() {
+        when(jsonPersonRepository.findAll()).thenReturn(List.of(personA));
+
+        List<Person> result = populationService.getPersonListByLastName("NonExistingLastName");
+
+        assertTrue(result.isEmpty());
+    }
 }

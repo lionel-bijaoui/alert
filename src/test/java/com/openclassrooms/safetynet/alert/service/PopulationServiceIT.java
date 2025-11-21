@@ -107,4 +107,17 @@ public class PopulationServiceIT extends IntegrationTestBase {
 
         jsonPersonRepository.deleteByFirstNameAndLastName(PERSON_B_FIRST_NAME, PERSON_B_LAST_NAME);
     }
+
+    @Test
+    void getPersonListByLastName_shouldReturnPersonList_whenLastNameProvided() {
+        jsonPersonRepository.save(personB);
+
+        List<Person> result = populationService.getPersonListByLastName(PERSON_B_LAST_NAME);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertTrue(result.contains(personB));
+
+        jsonPersonRepository.deleteByFirstNameAndLastName(PERSON_B_FIRST_NAME, PERSON_B_LAST_NAME);
+    }
 }
