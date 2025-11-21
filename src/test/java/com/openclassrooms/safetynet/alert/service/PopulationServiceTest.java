@@ -105,4 +105,24 @@ public class PopulationServiceTest {
 
         assertTrue(result.isEmpty());
     }
+
+    @Test
+    void getPersonListByCity_shouldReturnPersonList_whenCityProvided() {
+        when(jsonPersonRepository.findAll()).thenReturn(List.of(personA, personB));
+
+        List<Person> result = populationService.getPersonListByCity(PERSON_A_CITY);
+
+        assertEquals(2, result.size());
+        assertTrue(result.contains(personA));
+        assertTrue(result.contains(personB));
+    }
+
+    @Test
+    void getPersonListByCity_shouldReturnEmptyList_whenNoMatchingCity() {
+        when(jsonPersonRepository.findAll()).thenReturn(List.of(personA));
+
+        List<Person> result = populationService.getPersonListByCity("NonExistingCity");
+
+        assertTrue(result.isEmpty());
+    }
 }

@@ -28,4 +28,10 @@ public class PopulationService {
                 .filter(person -> person.getAddress().equals(address))
                 .toList();
     }
+
+    public List<Person> getPersonListByCity(String city) {
+        return jsonPersonRepository.findAll().stream()
+                .filter(person -> person.getCity().equalsIgnoreCase(city))
+                .toList();
+    }
 }
