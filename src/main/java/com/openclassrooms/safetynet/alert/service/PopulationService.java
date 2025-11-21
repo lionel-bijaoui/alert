@@ -22,4 +22,10 @@ public class PopulationService {
                 .filter(person -> addressList.contains(person.getAddress()))
                 .toList();
     }
+
+    public List<Person> getPersonListByAddress(String address) {
+        return jsonPersonRepository.findAll().stream()
+                .filter(person -> person.getAddress().equals(address))
+                .toList();
+    }
 }
