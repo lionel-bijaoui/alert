@@ -1,8 +1,10 @@
 package com.openclassrooms.safetynet.alert.controller;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -202,5 +204,33 @@ public class PopulationControllerTest {
     void getPersonListByLastName_shouldReturnBadRequest_whenLastNameIsMissing() throws Exception {
         mockMvc.perform(get("/personInfolastName").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getAllEmailFromCity_shouldReturnEmailList_whenPersonsExistInCity() throws Exception {
+        when(populationService.getPersonListByCity(PERSON_A_CITY))
+                .thenReturn(List.of(personA, personB));
+
+        mockMvc.perform(
+                        get("/communityEmail")
+                                .param("city", PERSON_A_CITY)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0]").value(PERSON_A_EMAIL))
+                .andExpect(jsonPath("$[1]").value(PERSON_B_EMAIL));
+    }
+
+    @Test
+    void getAllEmailFromCity_shouldReturnEmptyList_whenNoPersonsExistInCity() throws Exception {
+        when(populationService.getPersonListByCity("NonExistingCity")).thenReturn(List.of());
+        mockMvc.perform(
+                        get("/communityEmail")
+                                .param("city", "NonExistingCity")
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
     }
 }

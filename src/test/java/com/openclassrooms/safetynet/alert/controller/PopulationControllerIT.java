@@ -27,10 +27,7 @@ public class PopulationControllerIT extends IntegrationTestBase {
     private static final String PERSON_A_LAST_NAME = "Doe";
     private static final String PERSON_A_ADDRESS = "1509 Culver St";
     private static final String PERSON_A_CITY = "Culver";
-    private static final String PERSON_A_ZIP = "97451";
-    private static final String PERSON_A_PHONE = "841-874-6512";
     private static final String PERSON_A_EMAIL = "johndoe@email.com";
-    private static final String PERSON_A_BIRTHDATE = "1984-06-15";
     private static final List<String> PERSON_A_MEDICATIONS =
             List.of("aznol:350mg", "hydrapermazol:100mg");
     private static final List<String> PERSON_A_ALLERGIES = List.of("nillacilan");
@@ -53,5 +50,16 @@ public class PopulationControllerIT extends IntegrationTestBase {
                 .andExpect(jsonPath("$[0].medications[0]").value(PERSON_A_MEDICATIONS.get(0)))
                 .andExpect(jsonPath("$[0].medications[1]").value(PERSON_A_MEDICATIONS.get(1)))
                 .andExpect(jsonPath("$[0].allergies[0]").value(PERSON_A_ALLERGIES.getFirst()));
+    }
+
+    @Test
+    void getAllEmailFromCity_shouldReturnEmailList_whenCityExists() throws Exception {
+        mockMvc.perform(
+                        get("/communityEmail")
+                                .param("city", PERSON_A_CITY)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0]").value(PERSON_A_EMAIL));
     }
 }

@@ -58,4 +58,12 @@ public class PopulationController {
                                         List.of(),
                                         List.of()));
     }
+
+    @RequestMapping("/communityEmail")
+    public List<String> getAllEmailFromCity(@RequestParam String city) {
+        return populationService.getPersonListByCity(city).stream()
+                .map(Person::getEmail)
+                .distinct()
+                .toList();
+    }
 }
