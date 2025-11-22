@@ -25,6 +25,12 @@ public class MedicalRecordController {
         this.medicalRecordMapper = medicalRecordMapper;
     }
 
+    /**
+     * Add a medical record
+     *
+     * @param dto
+     * @return
+     */
     @PostMapping
     public ResponseEntity<MedicalRecordDTO> addMedicalRecord(
             @Valid @RequestBody MedicalRecordDTO dto) {
@@ -34,6 +40,12 @@ public class MedicalRecordController {
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
+    /**
+     * Update an existing medical record
+     *
+     * @param dto
+     * @return
+     */
     @PutMapping
     public ResponseEntity<MedicalRecordDTO> updateMedicalRecord(
             @Valid @RequestBody MedicalRecordDTO dto) {
@@ -43,6 +55,12 @@ public class MedicalRecordController {
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
+    /**
+     * Delete a medical record
+     *
+     * @param firstName
+     * @param lastName
+     */
     @DeleteMapping
     public void deleteMedicalRecord(@RequestParam String firstName, @RequestParam String lastName) {
         medicalRecordService.deleteMedicalRecord(firstName, lastName);

@@ -5,6 +5,7 @@ import com.openclassrooms.safetynet.alert.model.MedicalRecord;
 
 import org.mapstruct.Mapper;
 
+/** Mapper interface for converting between MedicalRecord entities and MedicalRecordDTOs. */
 @Mapper(componentModel = "spring")
 public interface MedicalRecordMapper {
 

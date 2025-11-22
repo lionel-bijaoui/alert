@@ -5,6 +5,7 @@ import com.openclassrooms.safetynet.alert.model.FireStation;
 
 import org.mapstruct.Mapper;
 
+/** Mapper interface for converting between FireStation entities and FireStationDTOs. */
 @Mapper(componentModel = "spring")
 public interface FireStationMapper {
 

@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Pattern;
 import java.time.LocalDate;
 import java.util.List;
 
-/** Immutable DTO for MedicalRecord payloads. */
+/** Data Transfer Object for Medical Record information. */
 public record MedicalRecordDTO(
         @NotBlank String firstName,
         @NotBlank String lastName,

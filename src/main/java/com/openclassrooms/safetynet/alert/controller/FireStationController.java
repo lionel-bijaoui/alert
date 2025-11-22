@@ -25,6 +25,12 @@ public class FireStationController {
         this.fireStationMapper = fireStationMapper;
     }
 
+    /**
+     * Add a fire station/address mapping
+     *
+     * @param dto
+     * @return
+     */
     @PostMapping
     public ResponseEntity<FireStationDTO> addFireStation(@Valid @RequestBody FireStationDTO dto) {
         FireStation entity = fireStationMapper.toEntity(dto);
@@ -33,6 +39,12 @@ public class FireStationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
+    /**
+     * Update the fire station number for an address
+     *
+     * @param dto
+     * @return
+     */
     @PutMapping
     public ResponseEntity<FireStationDTO> updateFireStation(
             @Valid @RequestBody FireStationDTO dto) {
@@ -42,6 +54,11 @@ public class FireStationController {
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
+    /**
+     * Delete the mapping for a fire station or address
+     *
+     * @param address
+     */
     @DeleteMapping
     public void deleteFireStation(@RequestParam String address) {
         fireStationService.deleteFireStation(address);

@@ -2,6 +2,7 @@ package com.openclassrooms.safetynet.alert.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
+/** Data Transfer Object for Person information. */
 public record PersonDTO(
         @NotBlank String firstName,
         @NotBlank String lastName,

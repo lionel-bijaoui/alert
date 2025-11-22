@@ -5,6 +5,7 @@ import jakarta.annotation.Nullable;
 
 import java.util.List;
 
+/** Data Transfer Object for Person Information including medical details. */
 public record PersonInfoDTO(
         @Nonnull String firstName,
         @Nonnull String lastName,

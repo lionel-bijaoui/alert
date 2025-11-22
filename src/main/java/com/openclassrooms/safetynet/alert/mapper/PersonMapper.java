@@ -5,6 +5,7 @@ import com.openclassrooms.safetynet.alert.model.Person;
 
 import org.mapstruct.Mapper;
 
+/** Mapper interface for converting between Person entities and PersonDTOs. */
 @Mapper(componentModel = "spring")
 public interface PersonMapper {
 

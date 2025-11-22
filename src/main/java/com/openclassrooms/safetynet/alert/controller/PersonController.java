@@ -24,6 +24,12 @@ public class PersonController {
         this.personMapper = personMapper;
     }
 
+    /**
+     * Add a new person
+     *
+     * @param dto
+     * @return
+     */
     @PostMapping
     public ResponseEntity<PersonDTO> addPerson(@Valid @RequestBody PersonDTO dto) {
         Person entity = personMapper.toEntity(dto);
@@ -32,6 +38,12 @@ public class PersonController {
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
+    /**
+     * Update an existing person
+     *
+     * @param dto
+     * @return
+     */
     @PutMapping
     public ResponseEntity<PersonDTO> updatePerson(@Valid @RequestBody PersonDTO dto) {
         Person entity = personMapper.toEntity(dto);
@@ -40,6 +52,12 @@ public class PersonController {
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
+    /**
+     * Delete a person
+     *
+     * @param firstName
+     * @param lastName
+     */
     @DeleteMapping
     public void deletePerson(@RequestParam String firstName, @RequestParam String lastName) {
         personService.deletePerson(firstName, lastName);
