@@ -1,14 +1,12 @@
 package com.openclassrooms.safetynet.alert.controller;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.openclassrooms.safetynet.alert.dto.PersonInfoDTO;
 import com.openclassrooms.safetynet.alert.model.MedicalRecord;
 import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.repository.PersonRepository;
@@ -69,12 +67,9 @@ public class PopulationControllerTest {
     private static Person personB;
     private static Person personC;
     private static MedicalRecord medicalRecordA;
-    private static MedicalRecord medicalRecordB;
     private static MedicalRecord medicalRecordC;
 
     @Autowired private MockMvc mockMvc;
-
-    @Autowired private ObjectMapper objectMapper;
 
     @MockitoBean private PersonRepository personRepository;
     @MockitoBean private PopulationService populationService;
@@ -116,13 +111,6 @@ public class PopulationControllerTest {
                         LocalDate.parse(PERSON_A_BIRTHDATE),
                         PERSON_A_MEDICATIONS,
                         PERSON_A_ALLERGIES);
-        medicalRecordB =
-                new MedicalRecord(
-                        PERSON_B_FIRST_NAME,
-                        PERSON_B_LAST_NAME,
-                        LocalDate.parse(PERSON_B_BIRTHDATE),
-                        PERSON_B_MEDICATIONS,
-                        PERSON_B_ALLERGIES);
         medicalRecordC =
                 new MedicalRecord(
                         PERSON_C_FIRST_NAME,
@@ -155,29 +143,15 @@ public class PopulationControllerTest {
                                 .param("lastName", PERSON_A_LAST_NAME)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(
-                        result -> {
-                            String responseBody = result.getResponse().getContentAsString();
-                            PersonInfoDTO[] responseDtoList =
-                                    objectMapper.readValue(responseBody, PersonInfoDTO[].class);
-                            assertEquals(2, responseDtoList.length);
-
-                            assertEquals(PERSON_A_FIRST_NAME, responseDtoList[0].firstName());
-                            assertEquals(PERSON_A_LAST_NAME, responseDtoList[0].lastName());
-                            assertEquals(PERSON_A_ADDRESS, responseDtoList[0].address());
-                            assertEquals(PERSON_A_EMAIL, responseDtoList[0].email());
-                            assertEquals(personAAge, responseDtoList[0].age());
-                            assertEquals(PERSON_A_MEDICATIONS, responseDtoList[0].medications());
-                            assertEquals(PERSON_A_ALLERGIES, responseDtoList[0].allergies());
-
-                            assertEquals(PERSON_C_FIRST_NAME, responseDtoList[1].firstName());
-                            assertEquals(PERSON_C_LAST_NAME, responseDtoList[1].lastName());
-                            assertEquals(PERSON_C_ADDRESS, responseDtoList[1].address());
-                            assertEquals(PERSON_C_EMAIL, responseDtoList[1].email());
-                            assertEquals(personBAge, responseDtoList[1].age());
-                            assertEquals(PERSON_C_MEDICATIONS, responseDtoList[1].medications());
-                            assertEquals(PERSON_C_ALLERGIES, responseDtoList[1].allergies());
-                        });
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[*].firstName", containsInAnyOrder(PERSON_A_FIRST_NAME, PERSON_C_FIRST_NAME)))
+                .andExpect(jsonPath("$[*].lastName", containsInAnyOrder(PERSON_A_LAST_NAME, PERSON_C_LAST_NAME)))
+                .andExpect(jsonPath("$[*].address", containsInAnyOrder(PERSON_A_ADDRESS, PERSON_C_ADDRESS)))
+                .andExpect(jsonPath("$[*].email", containsInAnyOrder(PERSON_A_EMAIL, PERSON_C_EMAIL)))
+                .andExpect(jsonPath("$[*].age", containsInAnyOrder(personAAge, personBAge)))
+                .andExpect(jsonPath("$[*].medications", containsInAnyOrder(PERSON_A_MEDICATIONS, PERSON_C_MEDICATIONS)))
+                .andExpect(jsonPath("$[*].allergies", containsInAnyOrder(PERSON_A_ALLERGIES, PERSON_C_ALLERGIES)));
     }
 
     @Test
@@ -191,13 +165,8 @@ public class PopulationControllerTest {
                                 .param("lastName", "NonExistingLastName")
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(
-                        result -> {
-                            String responseBody = result.getResponse().getContentAsString();
-                            PersonInfoDTO[] responseDtoList =
-                                    objectMapper.readValue(responseBody, PersonInfoDTO[].class);
-                            assertEquals(0, responseDtoList.length);
-                        });
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
     }
 
     @Test
@@ -218,8 +187,7 @@ public class PopulationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0]").value(PERSON_A_EMAIL))
-                .andExpect(jsonPath("$[1]").value(PERSON_B_EMAIL));
+                .andExpect(jsonPath("$", containsInAnyOrder(PERSON_A_EMAIL, PERSON_B_EMAIL)));
     }
 
     @Test

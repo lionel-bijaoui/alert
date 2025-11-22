@@ -1,8 +1,8 @@
 package com.openclassrooms.safetynet.alert.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,14 +55,8 @@ class FireStationControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
-                .andExpect(
-                        result -> {
-                            String responseBody = result.getResponse().getContentAsString();
-                            FireStationDTO responseDto =
-                                    objectMapper.readValue(responseBody, FireStationDTO.class);
-                            assertEquals(dto.address(), responseDto.address());
-                            assertEquals(dto.station(), responseDto.station());
-                        });
+                .andExpect(jsonPath("$.address").value(dto.address()))
+                .andExpect(jsonPath("$.station").value(dto.station()));
 
         verify(fireStationMapper, times(1)).toEntity(dto);
         verify(fireStationService, times(1)).addFireStation(entity);

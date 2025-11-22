@@ -1,5 +1,7 @@
 package com.openclassrooms.safetynet.alert.controller;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -42,14 +44,14 @@ public class PopulationControllerIT extends IntegrationTestBase {
                                 .param("lastName", PERSON_A_LAST_NAME)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].firstName").value(PERSON_A_FIRST_NAME))
-                .andExpect(jsonPath("$[0].lastName").value(PERSON_A_LAST_NAME))
-                .andExpect(jsonPath("$[0].address").value(PERSON_A_ADDRESS))
-                .andExpect(jsonPath("$[0].email").value(PERSON_A_EMAIL))
-                .andExpect(jsonPath("$[0].age").value(41))
-                .andExpect(jsonPath("$[0].medications[0]").value(PERSON_A_MEDICATIONS.get(0)))
-                .andExpect(jsonPath("$[0].medications[1]").value(PERSON_A_MEDICATIONS.get(1)))
-                .andExpect(jsonPath("$[0].allergies[0]").value(PERSON_A_ALLERGIES.getFirst()));
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[*].firstName", containsInAnyOrder(PERSON_A_FIRST_NAME)))
+                .andExpect(jsonPath("$[*].lastName", containsInAnyOrder(PERSON_A_LAST_NAME)))
+                .andExpect(jsonPath("$[*].address", containsInAnyOrder(PERSON_A_ADDRESS)))
+                .andExpect(jsonPath("$[*].email", containsInAnyOrder(PERSON_A_EMAIL)))
+                .andExpect(jsonPath("$[*].age", containsInAnyOrder(41)))
+                .andExpect(jsonPath("$[*].medications", containsInAnyOrder(PERSON_A_MEDICATIONS)))
+                .andExpect(jsonPath("$[*].allergies", containsInAnyOrder(PERSON_A_ALLERGIES)));
     }
 
     @Test
@@ -60,6 +62,7 @@ public class PopulationControllerIT extends IntegrationTestBase {
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0]").value(PERSON_A_EMAIL));
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$", containsInAnyOrder(PERSON_A_EMAIL)));
     }
 }

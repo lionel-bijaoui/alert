@@ -1,8 +1,8 @@
 package com.openclassrooms.safetynet.alert.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -71,14 +71,8 @@ class PersonControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
-                .andExpect(
-                        result -> {
-                            String responseBody = result.getResponse().getContentAsString();
-                            PersonDTO responseDto =
-                                    objectMapper.readValue(responseBody, PersonDTO.class);
-                            assertEquals(dto.firstName(), responseDto.firstName());
-                            assertEquals(dto.lastName(), responseDto.lastName());
-                        });
+                .andExpect(jsonPath("$.firstName").value(dto.firstName()))
+                .andExpect(jsonPath("$.lastName").value(dto.lastName()));
 
         verify(personMapper, times(1)).toEntity(dto);
         verify(personService, times(1)).addPerson(entity);
