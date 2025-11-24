@@ -5,6 +5,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.openclassrooms.safetynet.alert.model.MedicalRecord;
+import com.openclassrooms.safetynet.alert.model.Person;
+import com.openclassrooms.safetynet.alert.repository.JsonMedicalRecordRepository;
+import com.openclassrooms.safetynet.alert.repository.JsonPersonRepository;
 import com.openclassrooms.safetynet.alert.utils.IntegrationTestBase;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
@@ -17,6 +21,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -24,6 +31,10 @@ import org.springframework.test.web.servlet.MockMvc;
 public class AlertControllerIT extends IntegrationTestBase {
 
     @Autowired MockMvc mockMvc;
+
+    @Autowired JsonPersonRepository jsonPersonRepository;
+
+    @Autowired JsonMedicalRecordRepository jsonMedicalRecordRepository;
 
     @Test
     void
@@ -38,5 +49,39 @@ public class AlertControllerIT extends IntegrationTestBase {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[*]", containsInAnyOrder("841-874-6512")));
+    }
+
+    @Test
+    void getChildrenListByAddress_shouldReturnChildrenList_whenAddressExists() throws Exception {
+        String firstName = "Jane";
+        String lastName = "Smith";
+        String address = "1509 Culver St";
+        jsonPersonRepository.save(
+                new Person(
+                        firstName,
+                        lastName,
+                        address,
+                        "Culver",
+                        "97451",
+                        "841-874-6513",
+                        "janesmith@email.com"));
+
+        LocalDate twelveYearsAgo = LocalDate.now().minusYears(12);
+        jsonMedicalRecordRepository.save(
+                new MedicalRecord(firstName, lastName, twelveYearsAgo, null, List.of("peanut")));
+
+        mockMvc.perform(
+                        get("/childAlert")
+                                .param("address", address)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.children").isArray())
+                .andExpect(jsonPath("$.children[0].firstName").value(firstName))
+                .andExpect(jsonPath("$.children[0].lastName").value(lastName))
+                .andExpect(jsonPath("$.adults").isArray())
+                .andExpect(jsonPath("$.adults").isNotEmpty());
+
+        jsonPersonRepository.deleteByFirstNameAndLastName(firstName, lastName);
+        jsonMedicalRecordRepository.deleteByFirstNameAndLastName(firstName, lastName);
     }
 }
