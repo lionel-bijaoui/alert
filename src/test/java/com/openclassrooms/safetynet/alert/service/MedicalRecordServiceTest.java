@@ -3,11 +3,14 @@ package com.openclassrooms.safetynet.alert.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.openclassrooms.safetynet.alert.dto.PersonWithAge;
 import com.openclassrooms.safetynet.alert.exception.ConflictException;
 import com.openclassrooms.safetynet.alert.exception.ResourceNotFoundException;
 import com.openclassrooms.safetynet.alert.model.MedicalRecord;
+import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.repository.MedicalRecordRepository;
 import com.openclassrooms.safetynet.alert.utils.MedicalRecordTestBuilder;
+import com.openclassrooms.safetynet.alert.utils.PersonTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayNameGeneration(TestSentenceGenerator.class)
@@ -168,12 +172,13 @@ class MedicalRecordServiceTest {
 
     @Test
     void calculateAgeFromBirthdate_shouldReturnCorrectAge_whenBirthdateIsCorrect() {
-        LocalDate birthdate = LocalDate.now().minusYears(25);
+        int expected = 25;
+        LocalDate birthdate = LocalDate.now().minusYears(expected);
 
         Integer age = medicalRecordService.calculateAgeFromBirthdate(birthdate);
 
         assertNotNull(age);
-        assertEquals(25, age);
+        assertEquals(expected, age);
     }
 
     @Test
@@ -183,5 +188,22 @@ class MedicalRecordServiceTest {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> medicalRecordService.calculateAgeFromBirthdate(futureBirthdate));
+    }
+
+    @Test
+    void enrichPersonsWithAge_shouldEnrichPersons_whenMedicalRecordExists() {
+        Person person = new PersonTestBuilder().build();
+        MedicalRecord medicalRecord = new MedicalRecordTestBuilder().build();
+        List<Person> persons = List.of(person);
+
+        when(medicalRecordRepository.findByFirstNameAndLastName(
+                        person.getFirstName(), person.getLastName()))
+                .thenReturn(Optional.of(medicalRecord));
+
+        Stream<PersonWithAge> enrichedStream = medicalRecordService.enrichPersonsWithAge(persons);
+
+        List<PersonWithAge> enrichedList = enrichedStream.toList();
+        assertEquals(1, enrichedList.size());
+        assertEquals(41, enrichedList.getFirst().age());
     }
 }

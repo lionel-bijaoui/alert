@@ -1,6 +1,6 @@
 package com.openclassrooms.safetynet.alert.controller;
 
-import com.openclassrooms.safetynet.alert.dto.PersonInfoDTO;
+import com.openclassrooms.safetynet.alert.dto.PersonWithMedicalInfosDTO;
 import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.service.MedicalRecordService;
 import com.openclassrooms.safetynet.alert.service.PopulationService;
@@ -33,19 +33,19 @@ public class PopulationController {
      * @return
      */
     @RequestMapping("/personInfolastName")
-    public List<PersonInfoDTO> getPersonListByLastName(@RequestParam String lastName) {
+    public List<PersonWithMedicalInfosDTO> getPersonListByLastName(@RequestParam String lastName) {
         return populationService.getPersonListByLastName(lastName).stream()
                 .map(this::mapToPersonInfoDTO)
                 .toList();
     }
 
-    private PersonInfoDTO mapToPersonInfoDTO(Person person) {
+    private PersonWithMedicalInfosDTO mapToPersonInfoDTO(Person person) {
         return Optional.ofNullable(
                         medicalRecordService.getMedicalRecordByFullName(
                                 person.getFirstName(), person.getLastName()))
                 .map(
                         medicalRecord ->
-                                new PersonInfoDTO(
+                                new PersonWithMedicalInfosDTO(
                                         person.getFirstName(),
                                         person.getLastName(),
                                         person.getAddress(),
@@ -56,7 +56,7 @@ public class PopulationController {
                                         medicalRecord.getAllergies()))
                 .orElseGet(
                         () ->
-                                new PersonInfoDTO(
+                                new PersonWithMedicalInfosDTO(
                                         person.getFirstName(),
                                         person.getLastName(),
                                         person.getAddress(),

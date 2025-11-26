@@ -3,9 +3,11 @@ package com.openclassrooms.safetynet.alert.service;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.openclassrooms.safetynet.alert.model.MedicalRecord;
+import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.repository.MedicalRecordRepository;
 import com.openclassrooms.safetynet.alert.utils.IntegrationTestBase;
 import com.openclassrooms.safetynet.alert.utils.MedicalRecordTestBuilder;
+import com.openclassrooms.safetynet.alert.utils.PersonTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -101,5 +103,34 @@ class MedicalRecordServiceIT extends IntegrationTestBase {
                 medicalRecordRepository.findByFirstNameAndLastName(
                         existing.getFirstName(), existing.getLastName());
         assertTrue(after.isEmpty(), "The medical record should be removed from the repository");
+    }
+
+    @Test
+    void getMedicalRecordByFullName_shouldReturnMedicalRecord_whenExists() {
+        MedicalRecord existing = new MedicalRecordTestBuilder().build();
+        Optional<MedicalRecord> before =
+                medicalRecordRepository.findByFirstNameAndLastName(
+                        existing.getFirstName(), existing.getLastName());
+        assertTrue(before.isPresent(), "Precondition: existing medical record should be present");
+
+        MedicalRecord result =
+                medicalRecordService.getMedicalRecordByFullName(
+                        existing.getFirstName(), existing.getLastName());
+
+        assertNotNull(result);
+        assertEquals(existing.getFirstName(), result.getFirstName());
+        assertEquals(existing.getLastName(), result.getLastName());
+    }
+
+    @Test
+    void enrichPersonsWithAge_shouldEnrichPersons_whenMedicalRecordsExist() {
+        Person person = new PersonTestBuilder().build();
+        List<Person> persons = List.of(person);
+
+        var enrichedStream = medicalRecordService.enrichPersonsWithAge(persons);
+
+        var enrichedList = enrichedStream.toList();
+        assertEquals(1, enrichedList.size());
+        assertEquals(41, enrichedList.getFirst().age());
     }
 }

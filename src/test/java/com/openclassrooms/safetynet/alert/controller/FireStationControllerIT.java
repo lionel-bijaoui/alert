@@ -61,4 +61,17 @@ public class FireStationControllerIT extends IntegrationTestBase {
         mockMvc.perform(delete("/firestation").param("address", address))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void getPersonListByStationNumber_shouldReturnPersonList_whenStationNumberIsValid()
+            throws Exception {
+        int stationNumber = 3;
+
+        mockMvc.perform(get("/firestation").param("stationNumber", String.valueOf(stationNumber)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.population").isArray())
+                .andExpect(jsonPath("$.population.length()").value(1))
+                .andExpect(jsonPath("$.adultCount").value(1))
+                .andExpect(jsonPath("$.childCount").value(0));
+    }
 }

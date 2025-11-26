@@ -1,8 +1,10 @@
 package com.openclassrooms.safetynet.alert.service;
 
+import com.openclassrooms.safetynet.alert.dto.PersonWithAge;
 import com.openclassrooms.safetynet.alert.exception.ConflictException;
 import com.openclassrooms.safetynet.alert.exception.ResourceNotFoundException;
 import com.openclassrooms.safetynet.alert.model.MedicalRecord;
+import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.repository.MedicalRecordRepository;
 
 import jakarta.validation.constraints.NotNull;
@@ -11,7 +13,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /** Service class for managing medical records. */
 @Service
@@ -81,5 +85,24 @@ public class MedicalRecordService {
         } else {
             throw new IllegalArgumentException("Birthdate is invalid " + birthdate);
         }
+    }
+
+    /**
+     * Enrich a list of persons with their respective ages to cache ages and avoid multiple lookups
+     *
+     * @param persons
+     * @return Stream of PersonWithAge
+     */
+    public Stream<PersonWithAge> enrichPersonsWithAge(List<Person> persons) {
+        return persons.stream()
+                .map(
+                        person ->
+                                new PersonWithAge(
+                                        person,
+                                        calculateAgeFromBirthdate(
+                                                getMedicalRecordByFullName(
+                                                                person.getFirstName(),
+                                                                person.getLastName())
+                                                        .getBirthdate())));
     }
 }

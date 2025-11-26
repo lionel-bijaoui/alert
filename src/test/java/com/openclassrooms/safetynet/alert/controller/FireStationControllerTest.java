@@ -7,14 +7,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openclassrooms.safetynet.alert.dto.FireStationDTO;
+import com.openclassrooms.safetynet.alert.dto.PersonWithAge;
 import com.openclassrooms.safetynet.alert.exception.ConflictException;
 import com.openclassrooms.safetynet.alert.exception.ResourceNotFoundException;
 import com.openclassrooms.safetynet.alert.mapper.FireStationMapper;
+import com.openclassrooms.safetynet.alert.mapper.PersonMapper;
 import com.openclassrooms.safetynet.alert.model.FireStation;
+import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.service.FireStationService;
 import com.openclassrooms.safetynet.alert.service.MedicalRecordService;
 import com.openclassrooms.safetynet.alert.service.PopulationService;
 import com.openclassrooms.safetynet.alert.utils.FireStationTestBuilder;
+import com.openclassrooms.safetynet.alert.utils.PersonTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +29,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 @WebMvcTest(FireStationController.class)
 @DisplayNameGeneration(TestSentenceGenerator.class)
@@ -41,6 +48,8 @@ class FireStationControllerTest {
     @MockitoBean PopulationService populationService;
 
     @MockitoBean MedicalRecordService medicalRecordService;
+
+    @MockitoBean PersonMapper personMapper;
 
     FireStation entity;
     FireStationDTO dto;
@@ -137,5 +146,31 @@ class FireStationControllerTest {
 
         mockMvc.perform(delete("/firestation").param("address", address))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getPersonListByStationNumber_shouldReturnPopulationByFireStationDto_whenFireStationExists()
+            throws Exception {
+        Integer stationNumber = 2;
+
+        Person adult = new PersonTestBuilder().build();
+        Person child =
+                new PersonTestBuilder().withFirstName("Lola").withAddress("29 15th St").build();
+
+        when(fireStationService.getFireStationAddressListByFireStationNumber(anyInt()))
+                .thenReturn(List.of(adult.getAddress(), child.getAddress()));
+        when(populationService.getPersonListByAddressList(anyList()))
+                .thenReturn(List.of(adult, child));
+        when(medicalRecordService.enrichPersonsWithAge(any()))
+                .thenReturn(Stream.of(new PersonWithAge(adult, 99), new PersonWithAge(child, 1)));
+
+        mockMvc.perform(get("/firestation").param("stationNumber", String.valueOf(stationNumber)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.population").isArray())
+                .andExpect(jsonPath("$.population").isNotEmpty())
+                .andExpect(jsonPath("$.adultCount").isNumber())
+                .andExpect(jsonPath("$.adultCount").value(1))
+                .andExpect(jsonPath("$.childCount").isNumber())
+                .andExpect(jsonPath("$.childCount").value(1));
     }
 }

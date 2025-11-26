@@ -2,6 +2,7 @@ package com.openclassrooms.safetynet.alert.controller;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -9,6 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.openclassrooms.safetynet.alert.dto.PersonWithAge;
 import com.openclassrooms.safetynet.alert.mapper.PersonMapper;
 import com.openclassrooms.safetynet.alert.model.FireStation;
 import com.openclassrooms.safetynet.alert.model.Person;
@@ -30,6 +32,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 @WebMvcTest(AlertController.class)
 @DisplayNameGeneration(TestSentenceGenerator.class)
@@ -108,12 +111,8 @@ public class AlertControllerTest {
 
         personList.add(child);
         when(populationService.getPersonListByAddress(person.getAddress())).thenReturn(personList);
-        when(medicalRecordService.getAgeFromPersonFirstAndLastName(
-                        person.getFirstName(), person.getLastName()))
-                .thenReturn(34);
-        when(medicalRecordService.getAgeFromPersonFirstAndLastName(
-                        child.getFirstName(), child.getLastName()))
-                .thenReturn(1);
+        when(medicalRecordService.enrichPersonsWithAge(any()))
+                .thenReturn(Stream.of(new PersonWithAge(person, 99), new PersonWithAge(child, 1)));
 
         mockMvc.perform(get("/childAlert").param("address", person.getAddress()))
                 .andExpect(status().isOk())
@@ -126,9 +125,6 @@ public class AlertControllerTest {
     @Test
     void getChildrenListByAddress_shouldReturnEmptyList_whenNoChildrenExist() throws Exception {
         when(populationService.getPersonListByAddress(person.getAddress())).thenReturn(personList);
-        when(medicalRecordService.getAgeFromPersonFirstAndLastName(
-                        person.getFirstName(), person.getLastName()))
-                .thenReturn(34);
 
         mockMvc.perform(get("/childAlert").param("address", person.getAddress()))
                 .andExpect(status().isOk())
