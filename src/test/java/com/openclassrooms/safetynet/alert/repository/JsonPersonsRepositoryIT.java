@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.utils.IntegrationTestBase;
+import com.openclassrooms.safetynet.alert.utils.PersonTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.*;
@@ -19,54 +20,33 @@ import java.util.Optional;
 @DisplayNameGeneration(TestSentenceGenerator.class)
 public class JsonPersonsRepositoryIT extends IntegrationTestBase {
 
-    static final String PERSON_FIRST_NAME = "John";
-    static final String PERSON_LAST_NAME = "Doe";
-    static final String PERSON_ADDRESS = "1509 Culver St";
-    static final String PERSON_CITY = "Culver";
-    static final String PERSON_ZIP = "97451";
-    static final String PERSON_PHONE = "841-874-6512";
-    static final String PERSON_EMAIL = "john.doe@email.com";
-
-    @Autowired private JsonPersonRepository personsRepository;
+    @Autowired JsonPersonRepository personsRepository;
 
     @Test
-    @DisplayName("save should save person and return it when new person")
-    void save_shouldSavePersonAndReturnIt_whenNewPerson() {
-        Person personToSave =
-                new Person(
-                        PERSON_FIRST_NAME,
-                        PERSON_LAST_NAME,
-                        PERSON_ADDRESS,
-                        PERSON_CITY,
-                        PERSON_ZIP,
-                        PERSON_PHONE,
-                        PERSON_EMAIL);
+    void save_shouldPersistPersonAndRetrieveIt_whenNewPerson() {
+        Person personToSave = new PersonTestBuilder().build();
 
-        Person savedPerson = personsRepository.save(personToSave);
+        personsRepository.save(personToSave);
 
-        assertNotNull(savedPerson);
-        assertEquals(PERSON_FIRST_NAME, savedPerson.getFirstName());
-        assertEquals(PERSON_LAST_NAME, savedPerson.getLastName());
-        assertEquals(PERSON_ADDRESS, savedPerson.getAddress());
-        assertEquals(PERSON_CITY, savedPerson.getCity());
-        assertEquals(PERSON_ZIP, savedPerson.getZip());
-        assertEquals(PERSON_PHONE, savedPerson.getPhone());
-        assertEquals(PERSON_EMAIL, savedPerson.getEmail());
-
-        Optional<Person> retrieved =
-                personsRepository.findByFirstNameAndLastName(PERSON_FIRST_NAME, PERSON_LAST_NAME);
-        assertTrue(retrieved.isPresent());
-        assertEquals(PERSON_ADDRESS, retrieved.get().getAddress());
-        assertEquals(PERSON_LAST_NAME, retrieved.get().getLastName());
-        assertEquals(PERSON_ADDRESS, retrieved.get().getAddress());
-        assertEquals(PERSON_CITY, retrieved.get().getCity());
-        assertEquals(PERSON_ZIP, retrieved.get().getZip());
-        assertEquals(PERSON_PHONE, retrieved.get().getPhone());
-        assertEquals(PERSON_EMAIL, retrieved.get().getEmail());
+        Optional<Person> saved =
+                personsRepository.findByFirstNameAndLastName(
+                        personToSave.getFirstName(), personToSave.getLastName());
+        saved.ifPresentOrElse(
+                person -> {
+                    assertEquals(personToSave.getFirstName(), person.getFirstName());
+                    assertEquals(personToSave.getLastName(), person.getLastName());
+                    assertEquals(personToSave.getAddress(), person.getAddress());
+                    assertEquals(personToSave.getCity(), person.getCity());
+                    assertEquals(personToSave.getZip(), person.getZip());
+                    assertEquals(personToSave.getPhone(), person.getPhone());
+                    assertEquals(personToSave.getEmail(), person.getEmail());
+                },
+                () -> fail("The saved person should be retrievable"));
     }
 
     @Test
     void findAll_shouldReturnDataFromFile_whenStoreLoaded() {
+        Person existingPerson = new PersonTestBuilder().build();
         List<Person> all = personsRepository.findAll();
         assertNotNull(all);
         assertFalse(all.isEmpty());
@@ -74,19 +54,31 @@ public class JsonPersonsRepositoryIT extends IntegrationTestBase {
                 all.stream()
                         .anyMatch(
                                 p ->
-                                        PERSON_FIRST_NAME.equals(p.getFirstName())
-                                                && PERSON_LAST_NAME.equals(p.getLastName()));
+                                        existingPerson.getFirstName().equals(p.getFirstName())
+                                                && existingPerson
+                                                        .getLastName()
+                                                        .equals(p.getLastName()));
         assertTrue(hasPerson, "The test database must contain John Doe");
     }
 
     @Test
     void findByFirstNameAndLastName_shouldFindPerson_whenPresent() {
+        Person existingPerson = new PersonTestBuilder().build();
+
         Optional<Person> found =
-                personsRepository.findByFirstNameAndLastName(PERSON_FIRST_NAME, PERSON_LAST_NAME);
-        assertTrue(found.isPresent());
-        Person p = found.get();
-        assertEquals(PERSON_FIRST_NAME, p.getFirstName());
-        assertEquals(PERSON_LAST_NAME, p.getLastName());
-        assertEquals(PERSON_ADDRESS, p.getAddress());
+                personsRepository.findByFirstNameAndLastName(
+                        existingPerson.getFirstName(), existingPerson.getLastName());
+
+        found.ifPresentOrElse(
+                person -> {
+                    assertEquals(existingPerson.getFirstName(), person.getFirstName());
+                    assertEquals(existingPerson.getLastName(), person.getLastName());
+                    assertEquals(existingPerson.getAddress(), person.getAddress());
+                    assertEquals(existingPerson.getCity(), person.getCity());
+                    assertEquals(existingPerson.getZip(), person.getZip());
+                    assertEquals(existingPerson.getPhone(), person.getPhone());
+                    assertEquals(existingPerson.getEmail(), person.getEmail());
+                },
+                () -> fail("The person should be found"));
     }
 }

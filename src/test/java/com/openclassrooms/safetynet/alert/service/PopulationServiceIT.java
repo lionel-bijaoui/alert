@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.repository.JsonPersonRepository;
 import com.openclassrooms.safetynet.alert.utils.IntegrationTestBase;
+import com.openclassrooms.safetynet.alert.utils.PersonTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -21,55 +22,29 @@ import java.util.List;
 @DisplayNameGeneration(TestSentenceGenerator.class)
 public class PopulationServiceIT extends IntegrationTestBase {
 
-    private static final String PERSON_A_FIRST_NAME = "John";
-    private static final String PERSON_A_LAST_NAME = "Doe";
-    private static final String PERSON_A_ADDRESS = "1509 Culver St";
-    private static final String PERSON_A_CITY = "Culver";
-    private static final String PERSON_A_ZIP = "97451";
-    private static final String PERSON_A_PHONE = "841-874-6512";
-    private static final String PERSON_A_EMAIL = "johndoe@email.com";
-    private static final String PERSON_B_FIRST_NAME = "Jane";
-    private static final String PERSON_B_LAST_NAME = "Smith";
-    private static final String PERSON_B_ADDRESS = "29 15th St";
-    private static final String PERSON_B_CITY = "Culver";
-    private static final String PERSON_B_ZIP = "97451";
-    private static final String PERSON_B_PHONE = "841-874-6513";
-    private static final String PERSON_B_EMAIL = "janesmith@email.com";
+    @Autowired JsonPersonRepository jsonPersonRepository;
 
-    /** Person A is in the initial test values */
-    private static Person personA;
+    @Autowired PopulationService populationService;
 
-    private static Person personB;
-
-    @Autowired private JsonPersonRepository jsonPersonRepository;
-    @Autowired private PopulationService populationService;
+    Person personA;
+    Person personB;
 
     @BeforeEach
     void setUp() {
-        personA =
-                new Person(
-                        PERSON_A_FIRST_NAME,
-                        PERSON_A_LAST_NAME,
-                        PERSON_A_ADDRESS,
-                        PERSON_A_CITY,
-                        PERSON_A_ZIP,
-                        PERSON_A_PHONE,
-                        PERSON_A_EMAIL);
+        personA = new PersonTestBuilder().build();
         personB =
-                new Person(
-                        PERSON_B_FIRST_NAME,
-                        PERSON_B_LAST_NAME,
-                        PERSON_B_ADDRESS,
-                        PERSON_B_CITY,
-                        PERSON_B_ZIP,
-                        PERSON_B_PHONE,
-                        PERSON_B_EMAIL);
+                new PersonTestBuilder()
+                        .withFirstName("Jane")
+                        .withLastName("Smith")
+                        .withAddress("29 15th St")
+                        .withEmail("janesmith@email.com")
+                        .build();
     }
 
     @Test
     void getPersonListByAddressList_shouldReturnPersonList_whenAddressListProvided() {
         jsonPersonRepository.save(personB);
-        List<String> addressList = List.of(PERSON_A_ADDRESS, PERSON_B_ADDRESS);
+        List<String> addressList = List.of(personA.getAddress(), personB.getAddress());
 
         List<Person> result = populationService.getPersonListByAddressList(addressList);
 
@@ -77,47 +52,39 @@ public class PopulationServiceIT extends IntegrationTestBase {
         assertEquals(2, result.size());
         assertTrue(result.contains(personA));
         assertTrue(result.contains(personB));
-
-        jsonPersonRepository.deleteByFirstNameAndLastName(PERSON_B_FIRST_NAME, PERSON_B_LAST_NAME);
     }
 
     @Test
     void getPersonListByAddress_shouldReturnPersonList_whenAddressProvided() {
         jsonPersonRepository.save(personB);
 
-        List<Person> result = populationService.getPersonListByAddress(PERSON_B_ADDRESS);
+        List<Person> result = populationService.getPersonListByAddress(personB.getAddress());
 
         assertNotNull(result);
         assertEquals(1, result.size());
         assertTrue(result.contains(personB));
-
-        jsonPersonRepository.deleteByFirstNameAndLastName(PERSON_B_FIRST_NAME, PERSON_B_LAST_NAME);
     }
 
     @Test
     void getPersonListByCity_shouldReturnPersonList_whenCityProvided() {
         jsonPersonRepository.save(personB);
 
-        List<Person> result = populationService.getPersonListByCity(PERSON_B_CITY);
+        List<Person> result = populationService.getPersonListByCity(personB.getCity());
 
         assertNotNull(result);
         assertEquals(2, result.size());
         assertTrue(result.contains(personA));
         assertTrue(result.contains(personB));
-
-        jsonPersonRepository.deleteByFirstNameAndLastName(PERSON_B_FIRST_NAME, PERSON_B_LAST_NAME);
     }
 
     @Test
     void getPersonListByLastName_shouldReturnPersonList_whenLastNameProvided() {
         jsonPersonRepository.save(personB);
 
-        List<Person> result = populationService.getPersonListByLastName(PERSON_B_LAST_NAME);
+        List<Person> result = populationService.getPersonListByLastName(personB.getLastName());
 
         assertNotNull(result);
         assertEquals(1, result.size());
         assertTrue(result.contains(personB));
-
-        jsonPersonRepository.deleteByFirstNameAndLastName(PERSON_B_FIRST_NAME, PERSON_B_LAST_NAME);
     }
 }

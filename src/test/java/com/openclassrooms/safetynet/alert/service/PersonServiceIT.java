@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.repository.JsonPersonRepository;
 import com.openclassrooms.safetynet.alert.utils.IntegrationTestBase;
+import com.openclassrooms.safetynet.alert.utils.PersonTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -20,61 +21,75 @@ import java.util.Optional;
 @DisplayNameGeneration(TestSentenceGenerator.class)
 class PersonServiceIT extends IntegrationTestBase {
 
-    private static final String EXISTING_FIRST = "John";
-    private static final String EXISTING_LAST = "Doe";
+    @Autowired PersonService personService;
 
-    @Autowired private PersonService personService;
-    @Autowired private JsonPersonRepository personRepository;
+    @Autowired JsonPersonRepository personRepository;
 
     @Test
     void addPerson_shouldPersistAndReturn_whenNew() {
-        Person toAdd = new Person("New", "Person", "123 New St", "City", "00000", "000", "n@p.com");
+        Person toAdd =
+                new PersonTestBuilder()
+                        .withFirstName("New")
+                        .withLastName("Person")
+                        .withAddress("123 New St")
+                        .withCity("City")
+                        .withZip("00000")
+                        .withPhone("000")
+                        .withEmail("n@p.com")
+                        .build();
 
         Person saved = personService.addPerson(toAdd);
 
         assertNotNull(saved);
-        assertEquals("New", saved.getFirstName());
-        assertEquals("Person", saved.getLastName());
+        assertEquals(toAdd.getFirstName(), saved.getFirstName());
+        assertEquals(toAdd.getLastName(), saved.getLastName());
 
-        Optional<Person> found = personRepository.findByFirstNameAndLastName("New", "Person");
+        Optional<Person> found =
+                personRepository.findByFirstNameAndLastName(
+                        toAdd.getFirstName(), toAdd.getLastName());
         assertTrue(found.isPresent(), "The new person should be present in the repository");
-        assertEquals("123 New St", found.get().getAddress());
+        assertEquals(toAdd.getAddress(), found.get().getAddress());
     }
 
     @Test
     void updatePerson_shouldPersistUpdate_whenExisting() {
-        Person updated =
-                new Person(
-                        EXISTING_FIRST,
-                        EXISTING_LAST,
-                        "123 Updated St",
-                        "Culver",
-                        "97451",
-                        "841-874-6512",
-                        "jaboyd@email.com");
+        Person updated = new PersonTestBuilder().withAddress("123 Updated St").build();
 
         Person result = personService.updatePerson(updated);
 
         assertNotNull(result);
-        assertEquals(EXISTING_FIRST, result.getFirstName());
-        assertEquals("123 Updated St", result.getAddress());
+        assertEquals(updated.getFirstName(), result.getFirstName());
+        assertEquals(updated.getLastName(), result.getLastName());
+        assertEquals(updated.getAddress(), result.getAddress());
+        assertEquals(updated.getCity(), result.getCity());
+        assertEquals(updated.getZip(), result.getZip());
+        assertEquals(updated.getPhone(), result.getPhone());
+        assertEquals(updated.getEmail(), result.getEmail());
 
         Optional<Person> found =
-                personRepository.findByFirstNameAndLastName(EXISTING_FIRST, EXISTING_LAST);
-        assertTrue(found.isPresent(), "The person should still be present after update");
-        assertEquals("123 Updated St", found.get().getAddress());
+                personRepository.findByFirstNameAndLastName(
+                        updated.getFirstName(), updated.getLastName());
+        found.ifPresentOrElse(
+                person -> {
+                    assertEquals(updated.getFirstName(), person.getFirstName());
+                    assertEquals(updated.getLastName(), person.getLastName());
+                },
+                () -> fail("The person should still be present after update"));
     }
 
     @Test
     void deletePerson_shouldRemove_whenExisting() {
+        Person existing = new PersonTestBuilder().build();
         Optional<Person> before =
-                personRepository.findByFirstNameAndLastName(EXISTING_FIRST, EXISTING_LAST);
+                personRepository.findByFirstNameAndLastName(
+                        existing.getFirstName(), existing.getLastName());
         assertTrue(before.isPresent(), "Precondition: existing person should be present");
 
-        personService.deletePerson(EXISTING_FIRST, EXISTING_LAST);
+        personService.deletePerson(existing.getFirstName(), existing.getLastName());
 
         Optional<Person> after =
-                personRepository.findByFirstNameAndLastName(EXISTING_FIRST, EXISTING_LAST);
+                personRepository.findByFirstNameAndLastName(
+                        existing.getFirstName(), existing.getLastName());
         assertTrue(after.isEmpty(), "The person should be removed from the repository");
     }
 }

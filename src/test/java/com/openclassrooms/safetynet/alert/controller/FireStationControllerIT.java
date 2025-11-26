@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 public class FireStationControllerIT extends IntegrationTestBase {
 
     @Autowired MockMvc mockMvc;
+
     @Autowired ObjectMapper objectMapper;
 
     @Test

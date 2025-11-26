@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.openclassrooms.safetynet.alert.model.Database;
-import com.openclassrooms.safetynet.alert.model.Person;
+import com.openclassrooms.safetynet.alert.utils.PersonTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,25 +32,27 @@ import java.util.Optional;
 @DisplayNameGeneration(TestSentenceGenerator.class)
 public class JsonFileDataStoreTests {
 
-    private final String currentPathStr = "target/current.json";
-    private final String initialPathStr = "src/test/resources/initial.json";
+    static final String CURRENT_PATH_STRING = "target/current.json";
+    static final String INITIAL_PATH_STRING = "src/test/resources/initial.json";
 
-    private @Mock FilesOperations fileOperations;
+    @Mock FilesOperations fileOperations;
 
-    private @TempDir Path tempDirectory;
+    @TempDir Path tempDirectory;
 
-    private JsonFileDataStore store;
+    JsonFileDataStore store;
 
     @BeforeEach
     void setup() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        store = new JsonFileDataStore(mapper, currentPathStr, initialPathStr, fileOperations);
+        store =
+                new JsonFileDataStore(
+                        mapper, CURRENT_PATH_STRING, INITIAL_PATH_STRING, fileOperations);
     }
 
     @Test
-    void load_shouldCopyInitialToCurrent_whenCurrentPathMissing() throws Exception {
+    void load_shouldCopyInitialToCurrent_whenCurrentPathMissing() throws IOException {
         when(fileOperations.notExists(any(Path.class))).thenReturn(true);
         doNothing().when(fileOperations).createDirectories(any(Path.class));
         doNothing()
@@ -106,39 +109,28 @@ public class JsonFileDataStoreTests {
         Files.writeString(textFile, json, StandardCharsets.UTF_8);
         File jsonFile = textFile.toFile();
 
-        when(fileOperations.getFile(currentPathStr)).thenReturn(jsonFile);
+        when(fileOperations.getFile(CURRENT_PATH_STRING)).thenReturn(jsonFile);
 
-        Optional<Database> result = store.readAll();
+        Optional<Database> optionalDatabase = store.readAll();
 
-        verify(fileOperations).getFile(currentPathStr);
-
-        assertTrue(result.isPresent());
-        result.ifPresent(
+        verify(fileOperations).getFile(CURRENT_PATH_STRING);
+        optionalDatabase.ifPresentOrElse(
                 database -> {
-                    assertTrue(database.getPersons() != null && !database.getPersons().isEmpty());
-                    assertTrue(
-                            database.getFirestations() != null
-                                    && !database.getFirestations().isEmpty());
-                    assertTrue(
-                            database.getMedicalrecords() != null
-                                    && !database.getMedicalrecords().isEmpty());
-                });
+                    assertNotNull(database.getPersons());
+                    assertFalse(database.getPersons().isEmpty());
+                    assertNotNull(database.getFirestations());
+                    assertFalse(database.getFirestations().isEmpty());
+                    assertNotNull(database.getMedicalrecords());
+                    assertFalse(database.getMedicalrecords().isEmpty());
+                },
+                () -> fail("Database should be present"));
     }
 
     @Test
     void writeAll_shouldPreserveDatabase_whenWritingSameDatabase() {
         Database database =
                 new Database(
-                        new ArrayList<>(
-                                List.of(
-                                        new Person(
-                                                "John",
-                                                "Boyd",
-                                                "1509 Culver St",
-                                                "Culver",
-                                                "97451",
-                                                "841-874-6512",
-                                                "johnboyd@email.com"))),
+                        new ArrayList<>(List.of(new PersonTestBuilder().build())),
                         new ArrayList<>(),
                         new ArrayList<>());
 
@@ -149,12 +141,15 @@ public class JsonFileDataStoreTests {
 
         verify(fileOperations).getFile(any(String.class));
 
-        Optional<Database> maybeAfter = store.readAll();
-        assertTrue(maybeAfter.isPresent());
-        Database after = maybeAfter.get();
-        assertEquals(database.getPersons().size(), after.getPersons().size());
-        assertEquals(database.getFirestations().size(), after.getFirestations().size());
-        assertEquals(database.getMedicalrecords().size(), after.getMedicalrecords().size());
+        Optional<Database> optionalDatabase = store.readAll();
+        optionalDatabase.ifPresentOrElse(
+                after -> {
+                    assertEquals(database.getPersons().size(), after.getPersons().size());
+                    assertEquals(database.getFirestations().size(), after.getFirestations().size());
+                    assertEquals(
+                            database.getMedicalrecords().size(), after.getMedicalrecords().size());
+                },
+                () -> fail("Database should be present"));
     }
 
     @Test
@@ -162,14 +157,15 @@ public class JsonFileDataStoreTests {
         Database newDatabase =
                 new Database(
                         List.of(
-                                new Person(
-                                        "TestFirstName",
-                                        "TestLastName",
-                                        "123 Test St",
-                                        "TestCity",
-                                        "12345",
-                                        "123-456-7890",
-                                        "")),
+                                new PersonTestBuilder()
+                                        .withFirstName("TestFirstName")
+                                        .withLastName("TestLastName")
+                                        .withAddress("123 Test St")
+                                        .withCity("TestCity")
+                                        .withZip("12345")
+                                        .withPhone("123-456-7890")
+                                        .withEmail("test@email.com")
+                                        .build()),
                         new ArrayList<>(),
                         null);
 
@@ -180,13 +176,13 @@ public class JsonFileDataStoreTests {
 
         verify(fileOperations).getFile(any(String.class));
 
-        Optional<Database> maybeAfter = store.readAll();
-        assertTrue(maybeAfter.isPresent());
-        Database after = maybeAfter.get();
-
-        assertFalse(after.getPersons().isEmpty());
-        assertEquals(1, after.getPersons().size());
-        assertTrue(after.getFirestations().isEmpty());
-        assertNull(after.getMedicalrecords());
+        Optional<Database> optionalDatabase = store.readAll();
+        optionalDatabase.ifPresentOrElse(
+                database -> {
+                    assertEquals(1, database.getPersons().size());
+                    assertTrue(database.getFirestations().isEmpty());
+                    assertNull(database.getMedicalrecords());
+                },
+                () -> fail("Database should be present"));
     }
 }

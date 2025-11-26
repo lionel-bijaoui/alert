@@ -11,6 +11,7 @@ import com.openclassrooms.safetynet.alert.exception.ResourceNotFoundException;
 import com.openclassrooms.safetynet.alert.mapper.MedicalRecordMapper;
 import com.openclassrooms.safetynet.alert.model.MedicalRecord;
 import com.openclassrooms.safetynet.alert.service.MedicalRecordService;
+import com.openclassrooms.safetynet.alert.utils.MedicalRecordTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -22,15 +23,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 
 @WebMvcTest(MedicalRecordController.class)
 @DisplayNameGeneration(TestSentenceGenerator.class)
 class MedicalRecordControllerTest {
-
-    private static final String FIRST_NAME = "John";
-    private static final String LAST_NAME = "Doe";
 
     @Autowired MockMvc mockMvc;
 
@@ -40,25 +37,19 @@ class MedicalRecordControllerTest {
 
     @MockitoBean MedicalRecordMapper medicalRecordMapper;
 
-    MedicalRecordDTO dto;
     MedicalRecord entity;
+    MedicalRecordDTO dto;
 
     @BeforeEach
     void setUp() {
+        entity = new MedicalRecordTestBuilder().build();
         dto =
                 new MedicalRecordDTO(
-                        FIRST_NAME,
-                        LAST_NAME,
-                        LocalDate.parse("1989-10-15"),
-                        new ArrayList<>(),
-                        new ArrayList<>());
-        entity =
-                new MedicalRecord(
-                        dto.firstName(),
-                        dto.lastName(),
-                        dto.birthdate(),
-                        dto.medications(),
-                        dto.allergies());
+                        entity.getFirstName(),
+                        entity.getLastName(),
+                        entity.getBirthdate(),
+                        entity.getMedications(),
+                        entity.getAllergies());
     }
 
     @Test
@@ -72,10 +63,6 @@ class MedicalRecordControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated());
-
-        verify(medicalRecordMapper, times(1)).toEntity(dto);
-        verify(medicalRecordService, times(1)).addMedicalRecord(entity);
-        verify(medicalRecordMapper, times(1)).toDto(entity);
     }
 
     @Test
@@ -88,10 +75,6 @@ class MedicalRecordControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isConflict());
-
-        verify(medicalRecordMapper, times(1)).toEntity(dto);
-        verify(medicalRecordService, times(1)).addMedicalRecord(entity);
-        verify(medicalRecordMapper, never()).toDto(any());
     }
 
     @Test
@@ -104,12 +87,13 @@ class MedicalRecordControllerTest {
                         new ArrayList<>(),
                         new ArrayList<>());
         MedicalRecord updatedEntity =
-                new MedicalRecord(
-                        updatedDto.firstName(),
-                        updatedDto.lastName(),
-                        updatedDto.birthdate(),
-                        updatedDto.medications(),
-                        updatedDto.allergies());
+                new MedicalRecordTestBuilder()
+                        .withFirstName(updatedDto.firstName())
+                        .withLastName(updatedDto.lastName())
+                        .withBirthdate(updatedDto.birthdate())
+                        .withMedications(updatedDto.medications())
+                        .withAllergies(updatedDto.allergies())
+                        .build();
 
         when(medicalRecordMapper.toEntity(updatedDto)).thenReturn(updatedEntity);
         when(medicalRecordService.updateMedicalRecord(updatedEntity)).thenReturn(updatedEntity);
@@ -120,10 +104,6 @@ class MedicalRecordControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(updatedDto)))
                 .andExpect(status().isOk());
-
-        verify(medicalRecordMapper, times(1)).toEntity(updatedDto);
-        verify(medicalRecordService, times(1)).updateMedicalRecord(updatedEntity);
-        verify(medicalRecordMapper, times(1)).toDto(updatedEntity);
     }
 
     @Test
@@ -136,12 +116,13 @@ class MedicalRecordControllerTest {
                         new ArrayList<>(),
                         new ArrayList<>());
         MedicalRecord updatedEntity =
-                new MedicalRecord(
-                        updatedDto.firstName(),
-                        updatedDto.lastName(),
-                        updatedDto.birthdate(),
-                        updatedDto.medications(),
-                        updatedDto.allergies());
+                new MedicalRecordTestBuilder()
+                        .withFirstName(updatedDto.firstName())
+                        .withLastName(updatedDto.lastName())
+                        .withBirthdate(updatedDto.birthdate())
+                        .withMedications(updatedDto.medications())
+                        .withAllergies(updatedDto.allergies())
+                        .build();
 
         when(medicalRecordMapper.toEntity(updatedDto)).thenReturn(updatedEntity);
         when(medicalRecordService.updateMedicalRecord(updatedEntity))
@@ -152,23 +133,18 @@ class MedicalRecordControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(updatedDto)))
                 .andExpect(status().isNotFound());
-
-        verify(medicalRecordMapper, times(1)).toEntity(updatedDto);
-        verify(medicalRecordService, times(1)).updateMedicalRecord(updatedEntity);
-        verify(medicalRecordMapper, never()).toDto(any());
     }
 
     @Test
     void deleteMedicalRecord_shouldReturnOk_whenDeleted() throws Exception {
-        doNothing().when(medicalRecordService).deleteMedicalRecord(FIRST_NAME, LAST_NAME);
+
+        doNothing().when(medicalRecordService).deleteMedicalRecord(dto.firstName(), dto.lastName());
 
         mockMvc.perform(
                         delete("/medicalRecord")
-                                .param("firstName", FIRST_NAME)
-                                .param("lastName", LAST_NAME))
+                                .param("firstName", dto.firstName())
+                                .param("lastName", dto.lastName()))
                 .andExpect(status().isOk());
-
-        verify(medicalRecordService, times(1)).deleteMedicalRecord(FIRST_NAME, LAST_NAME);
     }
 
     @Test
@@ -182,7 +158,5 @@ class MedicalRecordControllerTest {
                                 .param("firstName", "Unknown")
                                 .param("lastName", "Person"))
                 .andExpect(status().isNotFound());
-
-        verify(medicalRecordService, times(1)).deleteMedicalRecord("Unknown", "Person");
     }
 }

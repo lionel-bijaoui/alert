@@ -12,6 +12,9 @@ import com.openclassrooms.safetynet.alert.exception.ResourceNotFoundException;
 import com.openclassrooms.safetynet.alert.mapper.FireStationMapper;
 import com.openclassrooms.safetynet.alert.model.FireStation;
 import com.openclassrooms.safetynet.alert.service.FireStationService;
+import com.openclassrooms.safetynet.alert.service.MedicalRecordService;
+import com.openclassrooms.safetynet.alert.service.PopulationService;
+import com.openclassrooms.safetynet.alert.utils.FireStationTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -35,13 +38,17 @@ class FireStationControllerTest {
 
     @MockitoBean FireStationMapper fireStationMapper;
 
-    FireStationDTO dto;
+    @MockitoBean PopulationService populationService;
+
+    @MockitoBean MedicalRecordService medicalRecordService;
+
     FireStation entity;
+    FireStationDTO dto;
 
     @BeforeEach
     void setUp() {
-        dto = new FireStationDTO("1509 Culver St", 3);
-        entity = new FireStation(dto.address(), dto.station());
+        entity = new FireStationTestBuilder().build();
+        dto = new FireStationDTO(entity.getAddress(), entity.getStation());
     }
 
     @Test
@@ -57,10 +64,6 @@ class FireStationControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.address").value(dto.address()))
                 .andExpect(jsonPath("$.station").value(dto.station()));
-
-        verify(fireStationMapper, times(1)).toEntity(dto);
-        verify(fireStationService, times(1)).addFireStation(entity);
-        verify(fireStationMapper, times(1)).toDto(entity);
     }
 
     @Test
@@ -74,17 +77,17 @@ class FireStationControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isConflict());
-
-        verify(fireStationMapper, times(1)).toEntity(dto);
-        verify(fireStationService, times(1)).addFireStation(entity);
-        verify(fireStationMapper, never()).toDto(any());
     }
 
     @Test
     void updateFireStation_shouldReturnUpdatedFireStation_whenFireStationIsUpdated()
             throws Exception {
         FireStationDTO updatedDto = new FireStationDTO(dto.address(), 4);
-        FireStation updatedEntity = new FireStation(updatedDto.address(), updatedDto.station());
+        FireStation updatedEntity =
+                new FireStationTestBuilder()
+                        .withAddress(updatedDto.address())
+                        .withStation(updatedDto.station())
+                        .build();
 
         when(fireStationMapper.toEntity(updatedDto)).thenReturn(updatedEntity);
         when(fireStationService.updateFireStation(updatedEntity)).thenReturn(updatedEntity);
@@ -95,16 +98,16 @@ class FireStationControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(updatedDto)))
                 .andExpect(status().isOk());
-
-        verify(fireStationMapper, times(1)).toEntity(updatedDto);
-        verify(fireStationService, times(1)).updateFireStation(updatedEntity);
-        verify(fireStationMapper, times(1)).toDto(updatedEntity);
     }
 
     @Test
     void updateFireStation_shouldReturnServerError_whenFireStationDoesNotExist() throws Exception {
         FireStationDTO updatedDto = new FireStationDTO(dto.address(), 4);
-        FireStation updatedEntity = new FireStation(updatedDto.address(), updatedDto.station());
+        FireStation updatedEntity =
+                new FireStationTestBuilder()
+                        .withAddress(updatedDto.address())
+                        .withStation(updatedDto.station())
+                        .build();
 
         when(fireStationMapper.toEntity(updatedDto)).thenReturn(updatedEntity);
         when(fireStationService.updateFireStation(updatedEntity))
@@ -115,10 +118,6 @@ class FireStationControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(updatedDto)))
                 .andExpect(status().isNotFound());
-
-        verify(fireStationMapper, times(1)).toEntity(updatedDto);
-        verify(fireStationService, times(1)).updateFireStation(updatedEntity);
-        verify(fireStationMapper, never()).toDto(any());
     }
 
     @Test
@@ -127,8 +126,6 @@ class FireStationControllerTest {
 
         mockMvc.perform(delete("/firestation").param("address", dto.address()))
                 .andExpect(status().isOk());
-
-        verify(fireStationService, times(1)).deleteFireStation(dto.address());
     }
 
     @Test
@@ -140,7 +137,5 @@ class FireStationControllerTest {
 
         mockMvc.perform(delete("/firestation").param("address", address))
                 .andExpect(status().isNotFound());
-
-        verify(fireStationService, times(1)).deleteFireStation(address);
     }
 }

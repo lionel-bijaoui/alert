@@ -7,9 +7,9 @@ import com.openclassrooms.safetynet.alert.exception.ConflictException;
 import com.openclassrooms.safetynet.alert.exception.ResourceNotFoundException;
 import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.repository.JsonPersonRepository;
+import com.openclassrooms.safetynet.alert.utils.PersonTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,133 +23,121 @@ import java.util.Optional;
 @DisplayNameGeneration(TestSentenceGenerator.class)
 class PersonServiceTest {
 
-    static final String EXISTING_FIRST = "John";
-    static final String EXISTING_LAST = "Boyd";
-    static final String EXISTING_ADDRESS = "1509 Culver St";
-    static final String EXISTING_CITY = "Culver";
-    static final String EXISTING_ZIP = "97451";
-    static final String EXISTING_PHONE = "841-874-6512";
-    static final String EXISTING_EMAIL = "john.boyd@email.com";
-
     @Mock JsonPersonRepository jsonPersonRepository;
 
     @InjectMocks PersonService personService;
 
-    Person existingPerson;
-
-    @BeforeEach
-    void setUp() {
-        existingPerson =
-                new Person(
-                        EXISTING_FIRST,
-                        EXISTING_LAST,
-                        EXISTING_ADDRESS,
-                        EXISTING_CITY,
-                        EXISTING_ZIP,
-                        EXISTING_PHONE,
-                        EXISTING_EMAIL);
-    }
-
     @Test
     void addPerson_shouldReturnSavedPerson_whenNotPresent() {
-        Person toAdd = new Person("New", "Person", "123 New St", "City", "00000", "000", "n@p.com");
+        Person newPerson =
+                new PersonTestBuilder()
+                        .withFirstName("New")
+                        .withLastName("Person")
+                        .withAddress("123 New St")
+                        .withCity("City")
+                        .withZip("00000")
+                        .withPhone("000")
+                        .withEmail("newperson@email.com")
+                        .build();
 
         when(jsonPersonRepository.findByFirstNameAndLastName(
-                        toAdd.getFirstName(), toAdd.getLastName()))
+                        newPerson.getFirstName(), newPerson.getLastName()))
                 .thenReturn(Optional.empty());
-        when(jsonPersonRepository.save(toAdd)).thenReturn(toAdd);
+        when(jsonPersonRepository.save(newPerson)).thenReturn(newPerson);
 
-        Person result = personService.addPerson(toAdd);
+        Person result = personService.addPerson(newPerson);
 
         assertNotNull(result);
-        assertEquals(toAdd.getFirstName(), result.getFirstName());
-        assertEquals(toAdd.getLastName(), result.getLastName());
+        assertEquals(newPerson.getFirstName(), result.getFirstName());
+        assertEquals(newPerson.getLastName(), result.getLastName());
 
         verify(jsonPersonRepository, times(1))
-                .findByFirstNameAndLastName(toAdd.getFirstName(), toAdd.getLastName());
-        verify(jsonPersonRepository, times(1)).save(toAdd);
+                .findByFirstNameAndLastName(newPerson.getFirstName(), newPerson.getLastName());
+        verify(jsonPersonRepository, times(1)).save(newPerson);
     }
 
     @Test
     void addPerson_shouldThrowConflictException_whenPersonExists() {
-        when(jsonPersonRepository.findByFirstNameAndLastName(EXISTING_FIRST, EXISTING_LAST))
+        Person existingPerson = new PersonTestBuilder().build();
+        when(jsonPersonRepository.findByFirstNameAndLastName(
+                        existingPerson.getFirstName(), existingPerson.getLastName()))
                 .thenReturn(Optional.of(existingPerson));
 
         assertThrows(ConflictException.class, () -> personService.addPerson(existingPerson));
 
         verify(jsonPersonRepository, times(1))
-                .findByFirstNameAndLastName(EXISTING_FIRST, EXISTING_LAST);
+                .findByFirstNameAndLastName(
+                        existingPerson.getFirstName(), existingPerson.getLastName());
         verify(jsonPersonRepository, never()).save(any());
     }
 
     @Test
     void updatePerson_shouldReturnUpdatedPerson_whenExists() {
-        Person updated =
-                new Person(
-                        EXISTING_FIRST,
-                        EXISTING_LAST,
-                        "New Addr",
-                        EXISTING_CITY,
-                        EXISTING_ZIP,
-                        EXISTING_PHONE,
-                        EXISTING_EMAIL);
+        Person existingPerson = new PersonTestBuilder().build();
+        String newAddress = "New Addr";
+        Person updatedPerson = new PersonTestBuilder().withAddress(newAddress).build();
 
-        when(jsonPersonRepository.findByFirstNameAndLastName(EXISTING_FIRST, EXISTING_LAST))
+        when(jsonPersonRepository.findByFirstNameAndLastName(
+                        existingPerson.getFirstName(), existingPerson.getLastName()))
                 .thenReturn(Optional.of(existingPerson));
-        when(jsonPersonRepository.save(any(Person.class))).thenReturn(updated);
+        when(jsonPersonRepository.save(any(Person.class))).thenReturn(updatedPerson);
 
-        Person result = personService.updatePerson(updated);
+        Person result = personService.updatePerson(updatedPerson);
 
         assertNotNull(result);
-        assertEquals(EXISTING_FIRST, result.getFirstName());
-        assertEquals("New Addr", result.getAddress());
+        assertEquals(existingPerson.getFirstName(), result.getFirstName());
+        assertEquals(newAddress, result.getAddress());
 
         verify(jsonPersonRepository, times(1))
-                .findByFirstNameAndLastName(EXISTING_FIRST, EXISTING_LAST);
+                .findByFirstNameAndLastName(
+                        existingPerson.getFirstName(), existingPerson.getLastName());
         verify(jsonPersonRepository, times(1)).save(any(Person.class));
     }
 
     @Test
     void updatePerson_shouldThrowResourceNotFoundException_whenNotExists() {
-        Person updated = new Person("No", "Body", "Addr", "City", "00000", "000", "e@x.com");
+        Person nonExistingPerson =
+                new PersonTestBuilder().withFirstName("Nobody").withLastName("Here").build();
 
-        when(jsonPersonRepository.findByFirstNameAndLastName(
-                        updated.getFirstName(), updated.getLastName()))
+        when(jsonPersonRepository.findByFirstNameAndLastName(any(String.class), any(String.class)))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> personService.updatePerson(updated));
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> personService.updatePerson(nonExistingPerson));
 
         verify(jsonPersonRepository, times(1))
-                .findByFirstNameAndLastName(updated.getFirstName(), updated.getLastName());
+                .findByFirstNameAndLastName(any(String.class), any(String.class));
         verify(jsonPersonRepository, never()).save(any());
     }
 
     @Test
     void deletePerson_shouldRemovePerson_whenExists() {
-        when(jsonPersonRepository.findByFirstNameAndLastName(EXISTING_FIRST, EXISTING_LAST))
+        Person existingPerson = new PersonTestBuilder().build();
+        when(jsonPersonRepository.findByFirstNameAndLastName(
+                        existingPerson.getFirstName(), existingPerson.getLastName()))
                 .thenReturn(Optional.of(existingPerson));
         doNothing()
                 .when(jsonPersonRepository)
-                .deleteByFirstNameAndLastName(EXISTING_FIRST, EXISTING_LAST);
+                .deleteByFirstNameAndLastName(
+                        existingPerson.getFirstName(), existingPerson.getLastName());
 
-        personService.deletePerson(EXISTING_FIRST, EXISTING_LAST);
+        personService.deletePerson(existingPerson.getFirstName(), existingPerson.getLastName());
 
         verify(jsonPersonRepository, times(1))
-                .findByFirstNameAndLastName(EXISTING_FIRST, EXISTING_LAST);
-        verify(jsonPersonRepository, times(1))
-                .deleteByFirstNameAndLastName(EXISTING_FIRST, EXISTING_LAST);
+                .deleteByFirstNameAndLastName(
+                        existingPerson.getFirstName(), existingPerson.getLastName());
     }
 
     @Test
     void deletePerson_shouldThrowResourceNotFoundException_whenNotExists() {
-        when(jsonPersonRepository.findByFirstNameAndLastName("Nobody", "Here"))
+        when(jsonPersonRepository.findByFirstNameAndLastName(any(String.class), any(String.class)))
                 .thenReturn(Optional.empty());
 
         assertThrows(
                 ResourceNotFoundException.class,
                 () -> personService.deletePerson("Nobody", "Here"));
 
-        verify(jsonPersonRepository, times(1)).findByFirstNameAndLastName("Nobody", "Here");
         verify(jsonPersonRepository, never()).deleteByFirstNameAndLastName(any(), any());
     }
 }

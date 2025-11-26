@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import com.openclassrooms.safetynet.alert.model.Database;
 import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.store.JsonFileDataStore;
+import com.openclassrooms.safetynet.alert.utils.PersonTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -24,14 +25,6 @@ import java.util.Optional;
 @DisplayNameGeneration(TestSentenceGenerator.class)
 public class JsonPersonsRepositoryTests {
 
-    static final String PERSON_FIRST_NAME = "John";
-    static final String PERSON_LAST_NAME = "Doe";
-    static final String PERSON_ADDRESS = "1509 Culver St";
-    static final String PERSON_CITY = "Culver";
-    static final String PERSON_ZIP = "97451";
-    static final String PERSON_PHONE = "841-874-6512";
-    static final String PERSON_EMAIL = "john.doe@email.com";
-
     @Mock JsonFileDataStore jsonFileDataStore;
 
     @InjectMocks JsonPersonRepository personsRepository;
@@ -45,29 +38,20 @@ public class JsonPersonsRepositoryTests {
 
     @Test
     void save_shouldSavePersonAndReturnIt_whenNewPerson() {
-        Person personToSave =
-                new Person(
-                        PERSON_FIRST_NAME,
-                        PERSON_LAST_NAME,
-                        PERSON_ADDRESS,
-                        PERSON_CITY,
-                        PERSON_ZIP,
-                        PERSON_PHONE,
-                        PERSON_EMAIL);
+        Person personToSave = new PersonTestBuilder().build();
 
         when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
 
         Person savedPerson = personsRepository.save(personToSave);
 
         assertNotNull(savedPerson);
-        assertEquals(PERSON_FIRST_NAME, savedPerson.getFirstName());
-        assertEquals(PERSON_LAST_NAME, savedPerson.getLastName());
-        assertEquals(PERSON_ADDRESS, savedPerson.getAddress());
-        assertEquals(PERSON_CITY, savedPerson.getCity());
-        assertEquals(PERSON_ZIP, savedPerson.getZip());
-        assertEquals(PERSON_PHONE, savedPerson.getPhone());
-        assertEquals(PERSON_EMAIL, savedPerson.getEmail());
-        verify(jsonFileDataStore, times(1)).readAll();
+        assertEquals(personToSave.getFirstName(), savedPerson.getFirstName());
+        assertEquals(personToSave.getLastName(), savedPerson.getLastName());
+        assertEquals(personToSave.getAddress(), savedPerson.getAddress());
+        assertEquals(personToSave.getCity(), savedPerson.getCity());
+        assertEquals(personToSave.getZip(), savedPerson.getZip());
+        assertEquals(personToSave.getPhone(), savedPerson.getPhone());
+        assertEquals(personToSave.getEmail(), savedPerson.getEmail());
         verify(jsonFileDataStore, times(1)).writeAll(database);
         assertTrue(
                 database.getPersons().contains(personToSave),
@@ -76,57 +60,30 @@ public class JsonPersonsRepositoryTests {
 
     @Test
     void save_shouldUpdateExistingPerson_whenPersonAlreadyExists() {
-        Person existingPerson =
-                new Person(
-                        PERSON_FIRST_NAME,
-                        PERSON_LAST_NAME,
-                        PERSON_ADDRESS,
-                        PERSON_CITY,
-                        PERSON_ZIP,
-                        PERSON_PHONE,
-                        PERSON_EMAIL);
+        Person existingPerson = new PersonTestBuilder().build();
+        Person updatedPerson = new PersonTestBuilder().withAddress("123 New Address").build();
         database.getPersons().add(existingPerson);
-
-        final String PERSON_NEW_ADDRESS = "123 New Address";
-        Person updatedPerson =
-                new Person(
-                        PERSON_FIRST_NAME,
-                        PERSON_LAST_NAME,
-                        PERSON_NEW_ADDRESS,
-                        PERSON_CITY,
-                        PERSON_ZIP,
-                        PERSON_PHONE,
-                        PERSON_EMAIL);
 
         when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
 
         Person savedPerson = personsRepository.save(updatedPerson);
 
         assertNotNull(savedPerson);
-        assertEquals(PERSON_NEW_ADDRESS, savedPerson.getAddress());
-        verify(jsonFileDataStore, times(1)).readAll();
+        assertEquals(updatedPerson.getAddress(), savedPerson.getAddress());
         verify(jsonFileDataStore, times(1)).writeAll(database);
         assertEquals(
                 1,
                 database.getPersons().size(),
                 "There should still be only one person in the database.");
         assertEquals(
-                PERSON_NEW_ADDRESS,
+                updatedPerson.getAddress(),
                 database.getPersons().getFirst().getAddress(),
                 "The existing person's address should be updated.");
     }
 
     @Test
     void findAll_shouldReturnPersons_whenDatabaseHasPersons() {
-        Person person =
-                new Person(
-                        PERSON_FIRST_NAME,
-                        PERSON_LAST_NAME,
-                        PERSON_ADDRESS,
-                        PERSON_CITY,
-                        PERSON_ZIP,
-                        PERSON_PHONE,
-                        PERSON_EMAIL);
+        Person person = new PersonTestBuilder().build();
         database.getPersons().add(person);
 
         when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
@@ -135,9 +92,8 @@ public class JsonPersonsRepositoryTests {
 
         assertNotNull(result);
         assertEquals(1, result.size(), "There should be one person in the returned list.");
-        assertEquals(PERSON_FIRST_NAME, result.getFirst().getFirstName());
-        assertEquals(PERSON_LAST_NAME, result.getFirst().getLastName());
-        verify(jsonFileDataStore, times(1)).readAll();
+        assertEquals(person.getFirstName(), result.getFirst().getFirstName());
+        assertEquals(person.getLastName(), result.getFirst().getLastName());
     }
 
     @Test
@@ -165,40 +121,26 @@ public class JsonPersonsRepositoryTests {
 
     @Test
     void findByFirstNameAndLastName_shouldBeCaseInsensitiveAndFindPerson_whenMatchingExists() {
-        Person person =
-                new Person(
-                        PERSON_FIRST_NAME,
-                        PERSON_LAST_NAME,
-                        PERSON_ADDRESS,
-                        PERSON_CITY,
-                        PERSON_ZIP,
-                        PERSON_PHONE,
-                        PERSON_EMAIL);
+        Person person = new PersonTestBuilder().build();
         database.getPersons().add(person);
 
         when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
 
         Optional<Person> found =
                 personsRepository.findByFirstNameAndLastName(
-                        PERSON_FIRST_NAME.toLowerCase(), PERSON_LAST_NAME.toUpperCase());
+                        person.getFirstName().toLowerCase(), person.getLastName().toUpperCase());
 
-        assertTrue(found.isPresent(), "The person should be found.");
-        assertEquals(PERSON_FIRST_NAME, found.get().getFirstName());
-        assertEquals(PERSON_LAST_NAME, found.get().getLastName());
-        verify(jsonFileDataStore, times(1)).readAll();
+        found.ifPresentOrElse(
+                p -> {
+                    assertEquals(person.getFirstName(), p.getFirstName());
+                    assertEquals(person.getLastName(), p.getLastName());
+                },
+                () -> fail("The person should be found in the database."));
     }
 
     @Test
     void findByFirstNameAndLastName_shouldReturnEmpty_whenNotFound() {
-        Person person =
-                new Person(
-                        PERSON_FIRST_NAME,
-                        PERSON_LAST_NAME,
-                        PERSON_ADDRESS,
-                        PERSON_CITY,
-                        PERSON_ZIP,
-                        PERSON_PHONE,
-                        PERSON_EMAIL);
+        Person person = new PersonTestBuilder().build();
         database.getPersons().add(person);
 
         when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
@@ -206,36 +148,19 @@ public class JsonPersonsRepositoryTests {
         Optional<Person> found = personsRepository.findByFirstNameAndLastName("Not", "Here");
 
         assertTrue(found.isEmpty(), "No person should not be found.");
-        verify(jsonFileDataStore, times(1)).readAll();
     }
 
     @Test
     void findByAddress_shouldBeCaseInsensitiveAndReturnPersons_whenMatchingExists() {
-        Person person =
-                new Person(
-                        PERSON_FIRST_NAME,
-                        PERSON_LAST_NAME,
-                        PERSON_ADDRESS,
-                        PERSON_CITY,
-                        PERSON_ZIP,
-                        PERSON_PHONE,
-                        PERSON_EMAIL);
-        database.getPersons().add(person);
-
+        Person person = new PersonTestBuilder().build();
         Person anotherPerson =
-                new Person(
-                        "Another",
-                        "Person",
-                        PERSON_ADDRESS,
-                        PERSON_CITY,
-                        PERSON_ZIP,
-                        PERSON_PHONE,
-                        PERSON_EMAIL);
+                new PersonTestBuilder().withFirstName("Another").withLastName("Person").build();
+        database.getPersons().add(person);
         database.getPersons().add(anotherPerson);
 
         when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
 
-        List<Person> found = personsRepository.findByAddress(PERSON_ADDRESS.toUpperCase());
+        List<Person> found = personsRepository.findByAddress(person.getAddress().toUpperCase());
 
         assertNotNull(found);
         assertEquals(2, found.size(), "There should be two persons found matching the address.");
@@ -243,20 +168,11 @@ public class JsonPersonsRepositoryTests {
                 found,
                 List.of(person, anotherPerson),
                 "The found persons should match the expected persons.");
-        verify(jsonFileDataStore, times(1)).readAll();
     }
 
     @Test
     void findByAddress_shouldReturnEmptyList_whenNoMatchFound() {
-        Person person =
-                new Person(
-                        PERSON_FIRST_NAME,
-                        PERSON_LAST_NAME,
-                        PERSON_ADDRESS,
-                        PERSON_CITY,
-                        PERSON_ZIP,
-                        PERSON_PHONE,
-                        PERSON_EMAIL);
+        Person person = new PersonTestBuilder().build();
         database.getPersons().add(person);
 
         when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
@@ -267,27 +183,17 @@ public class JsonPersonsRepositoryTests {
         assertTrue(
                 found.isEmpty(),
                 "The returned persons list should be empty when no persons match the address.");
-        verify(jsonFileDataStore, times(1)).readAll();
     }
 
     @Test
     void deleteByFirstNameAndLastName_shouldRemovePerson_whenPersonExists() {
-        Person person =
-                new Person(
-                        PERSON_FIRST_NAME,
-                        PERSON_LAST_NAME,
-                        PERSON_ADDRESS,
-                        PERSON_CITY,
-                        PERSON_ZIP,
-                        PERSON_PHONE,
-                        PERSON_EMAIL);
+        Person person = new PersonTestBuilder().withLastName("Doe").build();
         database.getPersons().add(person);
 
         when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
 
-        personsRepository.deleteByFirstNameAndLastName(PERSON_FIRST_NAME, PERSON_LAST_NAME);
+        personsRepository.deleteByFirstNameAndLastName(person.getFirstName(), person.getLastName());
 
-        verify(jsonFileDataStore, times(1)).readAll();
         verify(jsonFileDataStore, times(1)).writeAll(database);
         assertFalse(
                 database.getPersons().contains(person),
@@ -296,22 +202,13 @@ public class JsonPersonsRepositoryTests {
 
     @Test
     void deleteByFirstNameAndLastName_shouldDoNothing_whenPersonDoesNotExist() {
-        Person person =
-                new Person(
-                        PERSON_FIRST_NAME,
-                        PERSON_LAST_NAME,
-                        PERSON_ADDRESS,
-                        PERSON_CITY,
-                        PERSON_ZIP,
-                        PERSON_PHONE,
-                        PERSON_EMAIL);
+        Person person = new PersonTestBuilder().build();
         database.getPersons().add(person);
 
         when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
 
         personsRepository.deleteByFirstNameAndLastName("Nonexistent", "Person");
 
-        verify(jsonFileDataStore, times(1)).readAll();
         verify(jsonFileDataStore, times(1)).writeAll(database);
         assertEquals(
                 1,

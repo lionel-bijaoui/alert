@@ -27,9 +27,9 @@ import java.util.ArrayList;
 @DisplayNameGeneration(TestSentenceGenerator.class)
 public class MedicalRecordControllerIT extends IntegrationTestBase {
 
-    private static final String DATE = "1989-10-15";
-    private static final String FIRST_NAME = "John";
-    private static final String LAST_NAME = "Doe";
+    static final String DATE = "1989-10-15";
+    static final String FIRST_NAME = "John";
+    static final String LAST_NAME = "Doe";
 
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;

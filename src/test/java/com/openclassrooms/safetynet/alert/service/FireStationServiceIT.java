@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.openclassrooms.safetynet.alert.model.FireStation;
 import com.openclassrooms.safetynet.alert.repository.JsonFireStationRepository;
+import com.openclassrooms.safetynet.alert.utils.FireStationTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.IntegrationTestBase;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
@@ -21,91 +22,85 @@ import java.util.Optional;
 @DisplayNameGeneration(TestSentenceGenerator.class)
 class FireStationServiceIT extends IntegrationTestBase {
 
-    private static final String EXISTING_FIRE_STATION_ADDRESS = "1509 Culver St";
-    private static final Integer EXISTING_FIRE_STATION_NUMBER = 3;
-    private static final String NEW_FIRE_STATION_ADDRESS = "29 15th St";
-    private static final Integer NEW_FIRE_STATION_NUMBER = 4;
+    @Autowired FireStationService fireStationService;
 
-    @Autowired private FireStationService fireStationService;
-    @Autowired private JsonFireStationRepository fireStationRepository;
+    @Autowired JsonFireStationRepository fireStationRepository;
 
     @Test
     void addFireStation_shouldPersistAndReturn_whenNew() {
-        FireStation toAdd = new FireStation(NEW_FIRE_STATION_ADDRESS, NEW_FIRE_STATION_NUMBER);
+        FireStation toAdd =
+                new FireStationTestBuilder().withAddress("29 15th St").withStation(4).build();
 
         FireStation saved = fireStationService.addFireStation(toAdd);
 
         assertNotNull(saved);
-        assertEquals(NEW_FIRE_STATION_ADDRESS, saved.getAddress());
-        assertEquals(NEW_FIRE_STATION_NUMBER, saved.getStation());
+        assertEquals(toAdd.getAddress(), saved.getAddress());
+        assertEquals(toAdd.getStation(), saved.getStation());
 
-        Optional<FireStation> found = fireStationRepository.findByAddress(NEW_FIRE_STATION_ADDRESS);
+        Optional<FireStation> found = fireStationRepository.findByAddress(toAdd.getAddress());
         assertTrue(found.isPresent(), "The new fire station should be present in the repository");
-        assertEquals(NEW_FIRE_STATION_ADDRESS, found.get().getAddress());
-        assertEquals(NEW_FIRE_STATION_NUMBER, found.get().getStation());
+        assertEquals(toAdd.getAddress(), found.get().getAddress());
+        assertEquals(toAdd.getStation(), found.get().getStation());
     }
 
     @Test
     void updateFireStation_shouldPersistUpdate_whenExisting() {
-        FireStation updated =
-                new FireStation(EXISTING_FIRE_STATION_ADDRESS, NEW_FIRE_STATION_NUMBER);
+        FireStation updated = new FireStationTestBuilder().withStation(99).build();
 
         FireStation result = fireStationService.updateFireStation(updated);
 
         assertNotNull(result);
-        assertEquals(EXISTING_FIRE_STATION_ADDRESS, result.getAddress());
-        assertEquals(NEW_FIRE_STATION_NUMBER, result.getStation());
+        assertEquals(updated.getAddress(), result.getAddress());
+        assertEquals(updated.getStation(), result.getStation());
 
-        Optional<FireStation> found =
-                fireStationRepository.findByAddress(EXISTING_FIRE_STATION_ADDRESS);
+        Optional<FireStation> found = fireStationRepository.findByAddress(updated.getAddress());
         assertTrue(found.isPresent(), "The fire station should still be present after update");
-        assertEquals(NEW_FIRE_STATION_NUMBER, found.get().getStation());
+        assertEquals(updated.getStation(), found.get().getStation());
     }
 
     @Test
     void deleteFireStation_shouldRemove_whenExisting() {
-        Optional<FireStation> before =
-                fireStationRepository.findByAddress(EXISTING_FIRE_STATION_ADDRESS);
+        FireStation toDelete = new FireStationTestBuilder().build();
+        Optional<FireStation> before = fireStationRepository.findByAddress(toDelete.getAddress());
         assertTrue(before.isPresent(), "Precondition: existing fire station should be present");
-        assertEquals(
-                EXISTING_FIRE_STATION_NUMBER,
-                before.get().getStation(),
-                "Precondition: station number should match fixture");
 
-        fireStationService.deleteFireStation(EXISTING_FIRE_STATION_ADDRESS);
+        fireStationService.deleteFireStation(toDelete.getAddress());
 
-        Optional<FireStation> after =
-                fireStationRepository.findByAddress(EXISTING_FIRE_STATION_ADDRESS);
+        Optional<FireStation> after = fireStationRepository.findByAddress(toDelete.getAddress());
         assertTrue(after.isEmpty(), "The fire station should be removed from the repository");
     }
 
     @Test
     void getFireStationAddressListByFireStationNumber_shouldReturnAddresses_whenExisting() {
-        var addresses =
+        FireStation existing = new FireStationTestBuilder().build();
+
+        List<String> addresses =
                 fireStationService.getFireStationAddressListByFireStationNumber(
-                        EXISTING_FIRE_STATION_NUMBER);
+                        existing.getStation());
 
         assertNotNull(addresses);
         assertFalse(addresses.isEmpty(), "Addresses list should not be empty");
         assertTrue(
-                addresses.contains(EXISTING_FIRE_STATION_ADDRESS),
+                addresses.contains(existing.getAddress()),
                 "Addresses list should contain the existing fire station address");
     }
 
     @Test
     void getFireStationNumberByAddress_shouldReturnStationNumber_whenExisting() {
-        int stationNumber =
-                fireStationService.getFireStationNumberByAddress(EXISTING_FIRE_STATION_ADDRESS);
+        FireStation existing = new FireStationTestBuilder().build();
+
+        int stationNumber = fireStationService.getFireStationNumberByAddress(existing.getAddress());
 
         assertEquals(
-                EXISTING_FIRE_STATION_NUMBER,
+                existing.getStation(),
                 stationNumber,
                 "The returned station number should match the existing one");
     }
 
     @Test
     void getFireStationListByFireStationNumberList_shouldReturnFireStations_whenExisting() {
-        var stationNumbers = List.of(EXISTING_FIRE_STATION_NUMBER, NEW_FIRE_STATION_NUMBER);
+        FireStation existing = new FireStationTestBuilder().build();
+        var stationNumbers = List.of(existing.getStation(), 99);
 
         var fireStations =
                 fireStationService.getFireStationListByFireStationNumberList(stationNumbers);
@@ -116,9 +111,8 @@ class FireStationServiceIT extends IntegrationTestBase {
                 fireStations.stream()
                         .anyMatch(
                                 fs ->
-                                        fs.getAddress().equals(EXISTING_FIRE_STATION_ADDRESS)
-                                                && fs.getStation()
-                                                        .equals(EXISTING_FIRE_STATION_NUMBER)),
+                                        fs.getAddress().equals(existing.getAddress())
+                                                && fs.getStation().equals(existing.getStation())),
                 "Fire stations list should contain the existing fire station");
     }
 }

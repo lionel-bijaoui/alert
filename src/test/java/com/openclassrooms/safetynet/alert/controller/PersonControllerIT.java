@@ -6,7 +6,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openclassrooms.safetynet.alert.dto.PersonDTO;
+import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.utils.IntegrationTestBase;
+import com.openclassrooms.safetynet.alert.utils.PersonTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -25,6 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 public class PersonControllerIT extends IntegrationTestBase {
 
     @Autowired MockMvc mockMvc;
+
     @Autowired ObjectMapper objectMapper;
 
     @Test
@@ -43,16 +46,16 @@ public class PersonControllerIT extends IntegrationTestBase {
 
     @Test
     void updatePerson_shouldReturnUpdated_whenPersonIsUpdated() throws Exception {
-        // Use the person present in test fixture initial.json
+        Person updatedPerson = new PersonTestBuilder().withAddress("123 Updated St").build();
         PersonDTO updated =
                 new PersonDTO(
-                        "John",
-                        "Doe",
-                        "123 Updated St",
-                        "Culver",
-                        "97451",
-                        "841-874-6512",
-                        "jaboyd@email.com");
+                        updatedPerson.getFirstName(),
+                        updatedPerson.getLastName(),
+                        updatedPerson.getAddress(),
+                        updatedPerson.getCity(),
+                        updatedPerson.getZip(),
+                        updatedPerson.getPhone(),
+                        updatedPerson.getEmail());
 
         mockMvc.perform(
                         put("/person")

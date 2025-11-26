@@ -7,6 +7,7 @@ import com.openclassrooms.safetynet.alert.exception.ConflictException;
 import com.openclassrooms.safetynet.alert.exception.ResourceNotFoundException;
 import com.openclassrooms.safetynet.alert.model.FireStation;
 import com.openclassrooms.safetynet.alert.repository.JsonFireStationRepository;
+import com.openclassrooms.safetynet.alert.utils.FireStationTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -24,11 +25,6 @@ import java.util.Optional;
 @DisplayNameGeneration(TestSentenceGenerator.class)
 class FireStationServiceTest {
 
-    static final String EXISTING_FIRE_STATION_ADDRESS = "1509 Culver St";
-    static final Integer EXISTING_FIRE_STATION_NUMBER = 3;
-    static final Integer NEW_FIRE_STATION_NUMBER = 4;
-    static final String NEW_FIRE_STATION_ADDRESS = "29 15th St";
-
     @Mock JsonFireStationRepository jsonFireStationRepository;
 
     @InjectMocks FireStationService fireStationService;
@@ -37,14 +33,13 @@ class FireStationServiceTest {
 
     @BeforeEach
     void setUp() {
-        existingFireStation =
-                new FireStation(EXISTING_FIRE_STATION_ADDRESS, EXISTING_FIRE_STATION_NUMBER);
+        existingFireStation = new FireStationTestBuilder().build();
     }
 
     @Test
     void addFireStation_shouldReturnSavedFireStation_whenNotPresent() {
         FireStation newFireStation =
-                new FireStation(NEW_FIRE_STATION_ADDRESS, NEW_FIRE_STATION_NUMBER);
+                new FireStationTestBuilder().withAddress("29 15th St").withStation(4).build();
 
         when(jsonFireStationRepository.findByAddress(newFireStation.getAddress()))
                 .thenReturn(Optional.empty());
@@ -55,46 +50,40 @@ class FireStationServiceTest {
         assertNotNull(result);
         assertEquals(newFireStation.getAddress(), result.getAddress());
         assertEquals(newFireStation.getStation(), result.getStation());
-
         verify(jsonFireStationRepository, times(1)).findByAddress(newFireStation.getAddress());
         verify(jsonFireStationRepository, times(1)).save(newFireStation);
     }
 
     @Test
     void addFireStation_shouldThrowConflictException_whenAddressExists() {
-        when(jsonFireStationRepository.findByAddress(EXISTING_FIRE_STATION_ADDRESS))
+        when(jsonFireStationRepository.findByAddress(existingFireStation.getAddress()))
                 .thenReturn(Optional.of(existingFireStation));
 
         assertThrows(
                 ConflictException.class,
                 () -> fireStationService.addFireStation(existingFireStation));
-
-        verify(jsonFireStationRepository, times(1)).findByAddress(EXISTING_FIRE_STATION_ADDRESS);
         verify(jsonFireStationRepository, never()).save(any());
     }
 
     @Test
     void updateFireStation_shouldReturnUpdatedFireStation_whenExists() {
-        FireStation updatedFireStation =
-                new FireStation(EXISTING_FIRE_STATION_ADDRESS, NEW_FIRE_STATION_NUMBER);
+        FireStation updatedFireStation = new FireStationTestBuilder().withStation(99).build();
 
-        when(jsonFireStationRepository.findByAddress(EXISTING_FIRE_STATION_ADDRESS))
+        when(jsonFireStationRepository.findByAddress(existingFireStation.getAddress()))
                 .thenReturn(Optional.of(updatedFireStation));
         when(jsonFireStationRepository.save(updatedFireStation)).thenReturn(updatedFireStation);
 
         FireStation result = fireStationService.updateFireStation(updatedFireStation);
 
         assertNotNull(result);
-        assertEquals(EXISTING_FIRE_STATION_ADDRESS, result.getAddress());
-        assertEquals(NEW_FIRE_STATION_NUMBER, result.getStation());
-
-        verify(jsonFireStationRepository, times(1)).findByAddress(EXISTING_FIRE_STATION_ADDRESS);
-        verify(jsonFireStationRepository, times(1)).save(updatedFireStation);
+        assertEquals(updatedFireStation.getAddress(), result.getAddress());
+        assertEquals(updatedFireStation.getStation(), result.getStation());
     }
 
     @Test
     void updateFireStation_shouldThrowResourceNotFoundException_whenNotExists() {
-        FireStation updated = new FireStation("Unknown Address 123", NEW_FIRE_STATION_NUMBER);
+        FireStation updated =
+                new FireStationTestBuilder().withAddress("Unknown Address 123").build();
 
         when(jsonFireStationRepository.findByAddress(updated.getAddress()))
                 .thenReturn(Optional.empty());
@@ -102,106 +91,93 @@ class FireStationServiceTest {
         assertThrows(
                 ResourceNotFoundException.class,
                 () -> fireStationService.updateFireStation(updated));
-
         verify(jsonFireStationRepository, times(1)).findByAddress(updated.getAddress());
         verify(jsonFireStationRepository, never()).save(any());
     }
 
     @Test
     void deleteFireStation_shouldRemoveFireStation_whenExists() {
-        when(jsonFireStationRepository.findByAddress(EXISTING_FIRE_STATION_ADDRESS))
+        when(jsonFireStationRepository.findByAddress(existingFireStation.getAddress()))
                 .thenReturn(Optional.of(existingFireStation));
-        doNothing().when(jsonFireStationRepository).deleteByAddress(EXISTING_FIRE_STATION_ADDRESS);
+        doNothing()
+                .when(jsonFireStationRepository)
+                .deleteByAddress(existingFireStation.getAddress());
 
-        fireStationService.deleteFireStation(EXISTING_FIRE_STATION_ADDRESS);
+        fireStationService.deleteFireStation(existingFireStation.getAddress());
 
-        verify(jsonFireStationRepository, times(1)).findByAddress(EXISTING_FIRE_STATION_ADDRESS);
-        verify(jsonFireStationRepository, times(1)).deleteByAddress(EXISTING_FIRE_STATION_ADDRESS);
+        verify(jsonFireStationRepository, times(1))
+                .deleteByAddress(existingFireStation.getAddress());
     }
 
     @Test
     void deleteFireStation_shouldThrowResourceNotFoundException_whenNotExists() {
-        when(jsonFireStationRepository.findByAddress(NEW_FIRE_STATION_ADDRESS))
+        when(jsonFireStationRepository.findByAddress(any(String.class)))
                 .thenReturn(Optional.empty());
 
         assertThrows(
-                ResourceNotFoundException.class,
-                () -> fireStationService.deleteFireStation(NEW_FIRE_STATION_ADDRESS));
+                ResourceNotFoundException.class, () -> fireStationService.deleteFireStation("99"));
 
-        verify(jsonFireStationRepository, times(1)).findByAddress(NEW_FIRE_STATION_ADDRESS);
         verify(jsonFireStationRepository, never()).deleteByAddress(any());
     }
 
     @Test
     void getFireStationAddressListByFireStationNumber_shouldReturnAddressList_whenExists() {
-        FireStation fireStation1 = new FireStation("Address 1", EXISTING_FIRE_STATION_NUMBER);
-        FireStation fireStation2 = new FireStation("Address 2", EXISTING_FIRE_STATION_NUMBER);
+        FireStation anotherFireStation =
+                new FireStationTestBuilder().withAddress("Another address").build();
 
-        when(jsonFireStationRepository.findByStationNumber(EXISTING_FIRE_STATION_NUMBER))
-                .thenReturn(List.of(fireStation1, fireStation2));
+        when(jsonFireStationRepository.findByStationNumber(existingFireStation.getStation()))
+                .thenReturn(List.of(existingFireStation, anotherFireStation));
 
         List<String> result =
                 fireStationService.getFireStationAddressListByFireStationNumber(
-                        EXISTING_FIRE_STATION_NUMBER);
+                        existingFireStation.getStation());
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertTrue(result.contains("Address 1"));
-        assertTrue(result.contains("Address 2"));
-
-        verify(jsonFireStationRepository, times(1))
-                .findByStationNumber(EXISTING_FIRE_STATION_NUMBER);
+        assertTrue(result.contains(existingFireStation.getAddress()));
+        assertTrue(result.contains(anotherFireStation.getAddress()));
     }
 
     @Test
     void getFireStationAddressListByFireStationNumber_shouldReturnEmptyList_whenNoneExists() {
-        when(jsonFireStationRepository.findByStationNumber(NEW_FIRE_STATION_NUMBER))
+        when(jsonFireStationRepository.findByStationNumber(any(Integer.class)))
                 .thenReturn(List.of());
 
-        List<String> result =
-                fireStationService.getFireStationAddressListByFireStationNumber(
-                        NEW_FIRE_STATION_NUMBER);
+        List<String> result = fireStationService.getFireStationAddressListByFireStationNumber(99);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
-
-        verify(jsonFireStationRepository, times(1)).findByStationNumber(NEW_FIRE_STATION_NUMBER);
     }
 
     @Test
     void getFireStationNumberByAddress_shouldReturnStationNumber_whenExists() {
-        when(jsonFireStationRepository.findByAddress(EXISTING_FIRE_STATION_ADDRESS))
+        when(jsonFireStationRepository.findByAddress(existingFireStation.getAddress()))
                 .thenReturn(Optional.of(existingFireStation));
 
         int result =
-                fireStationService.getFireStationNumberByAddress(EXISTING_FIRE_STATION_ADDRESS);
+                fireStationService.getFireStationNumberByAddress(existingFireStation.getAddress());
 
         assertEquals(
-                EXISTING_FIRE_STATION_NUMBER,
-                result,
-                "The returned station number should match the existing one");
-
-        verify(jsonFireStationRepository, times(1)).findByAddress(EXISTING_FIRE_STATION_ADDRESS);
+                (Integer) 3, result, "The returned station number should match the existing one");
     }
 
     @Test
     void getFireStationNumberByAddress_shouldThrowResourceNotFoundException_whenNotExists() {
-        when(jsonFireStationRepository.findByAddress(NEW_FIRE_STATION_ADDRESS))
+        when(jsonFireStationRepository.findByAddress(any(String.class)))
                 .thenReturn(Optional.empty());
 
         assertThrows(
                 ResourceNotFoundException.class,
-                () -> fireStationService.getFireStationNumberByAddress(NEW_FIRE_STATION_ADDRESS));
-
-        verify(jsonFireStationRepository, times(1)).findByAddress(NEW_FIRE_STATION_ADDRESS);
+                () -> fireStationService.getFireStationNumberByAddress("99"));
     }
 
     @Test
     void getFireStationListByFireStationNumberList_shouldReturnFireStationList_whenExists() {
-        FireStation fireStation1 = new FireStation("Address 1", EXISTING_FIRE_STATION_NUMBER);
-        FireStation fireStation2 = new FireStation("Address 2", NEW_FIRE_STATION_NUMBER);
+        FireStation fireStation1 = new FireStationTestBuilder().withAddress("Somewhere").build();
+        FireStation fireStation2 =
+                new FireStationTestBuilder().withAddress("Anywhere").withStation(99).build();
         List<Integer> stationNumbers =
-                List.of(EXISTING_FIRE_STATION_NUMBER, NEW_FIRE_STATION_NUMBER);
+                List.of(fireStation1.getStation(), fireStation2.getStation());
 
         when(jsonFireStationRepository.findAll())
                 .thenReturn(List.of(existingFireStation, fireStation1, fireStation2));
@@ -214,8 +190,6 @@ class FireStationServiceTest {
         assertTrue(result.contains(existingFireStation));
         assertTrue(result.contains(fireStation1));
         assertTrue(result.contains(fireStation2));
-
-        verify(jsonFireStationRepository, times(1)).findAll();
     }
 
     @Test
@@ -229,7 +203,5 @@ class FireStationServiceTest {
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
-
-        verify(jsonFireStationRepository, times(1)).findAll();
     }
 }

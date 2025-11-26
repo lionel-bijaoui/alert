@@ -5,11 +5,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.openclassrooms.safetynet.alert.model.MedicalRecord;
 import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.repository.JsonMedicalRecordRepository;
 import com.openclassrooms.safetynet.alert.repository.JsonPersonRepository;
 import com.openclassrooms.safetynet.alert.utils.IntegrationTestBase;
+import com.openclassrooms.safetynet.alert.utils.MedicalRecordTestBuilder;
+import com.openclassrooms.safetynet.alert.utils.PersonTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -22,7 +23,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -53,35 +53,31 @@ public class AlertControllerIT extends IntegrationTestBase {
 
     @Test
     void getChildrenListByAddress_shouldReturnChildrenList_whenAddressExists() throws Exception {
-        String firstName = "Jane";
-        String lastName = "Smith";
-        String address = "1509 Culver St";
-        jsonPersonRepository.save(
-                new Person(
-                        firstName,
-                        lastName,
-                        address,
-                        "Culver",
-                        "97451",
-                        "841-874-6513",
-                        "janesmith@email.com"));
+        Person child =
+                new PersonTestBuilder()
+                        .withFirstName("Jane")
+                        .withLastName("Smith")
+                        .withEmail("janesmith@email.com")
+                        .build();
+        jsonPersonRepository.save(child);
 
         LocalDate twelveYearsAgo = LocalDate.now().minusYears(12);
         jsonMedicalRecordRepository.save(
-                new MedicalRecord(firstName, lastName, twelveYearsAgo, null, List.of("peanut")));
+                new MedicalRecordTestBuilder()
+                        .withFirstName(child.getFirstName())
+                        .withLastName(child.getLastName())
+                        .withBirthdate(twelveYearsAgo)
+                        .build());
 
         mockMvc.perform(
                         get("/childAlert")
-                                .param("address", address)
+                                .param("address", child.getAddress())
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.children").isArray())
-                .andExpect(jsonPath("$.children[0].firstName").value(firstName))
-                .andExpect(jsonPath("$.children[0].lastName").value(lastName))
+                .andExpect(jsonPath("$.children[0].firstName").value(child.getFirstName()))
+                .andExpect(jsonPath("$.children[0].lastName").value(child.getLastName()))
                 .andExpect(jsonPath("$.adults").isArray())
                 .andExpect(jsonPath("$.adults").isNotEmpty());
-
-        jsonPersonRepository.deleteByFirstNameAndLastName(firstName, lastName);
-        jsonMedicalRecordRepository.deleteByFirstNameAndLastName(firstName, lastName);
     }
 }

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.openclassrooms.safetynet.alert.model.MedicalRecord;
 import com.openclassrooms.safetynet.alert.repository.MedicalRecordRepository;
 import com.openclassrooms.safetynet.alert.utils.IntegrationTestBase;
+import com.openclassrooms.safetynet.alert.utils.MedicalRecordTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -22,89 +23,83 @@ import java.util.Optional;
 @DisplayNameGeneration(TestSentenceGenerator.class)
 class MedicalRecordServiceIT extends IntegrationTestBase {
 
-    private static final String EXISTING_FIRST_NAME = "John";
-    private static final String EXISTING_LAST_NAME = "Doe";
+    @Autowired MedicalRecordService medicalRecordService;
 
-    private static final String NEW_FIRST_NAME = "Alice";
-    private static final String NEW_LAST_NAME = "Zephyr";
-    private static final String NEW_BIRTHDATE = "1990-01-01";
-
-    @Autowired private MedicalRecordService medicalRecordService;
-    @Autowired private MedicalRecordRepository medicalRecordRepository;
+    @Autowired MedicalRecordRepository medicalRecordRepository;
 
     @Test
     void addMedicalRecord_shouldPersistAndReturn_whenNew() {
-        LocalDate newBirth = LocalDate.parse(NEW_BIRTHDATE);
-
         MedicalRecord toAdd =
-                new MedicalRecord(
-                        NEW_FIRST_NAME,
-                        NEW_LAST_NAME,
-                        newBirth,
-                        List.of("med1:100mg"),
-                        List.of("pollen"));
+                new MedicalRecordTestBuilder()
+                        .withFirstName("Alice")
+                        .withLastName("Zephyr")
+                        .withBirthdate(LocalDate.parse("1990-01-01"))
+                        .withMedications(List.of("med1:100mg"))
+                        .withAllergies(List.of("pollen"))
+                        .build();
 
         MedicalRecord saved = medicalRecordService.addMedicalRecord(toAdd);
 
         assertNotNull(saved);
-        assertEquals(NEW_FIRST_NAME, saved.getFirstName());
-        assertEquals(NEW_LAST_NAME, saved.getLastName());
-        assertEquals(newBirth, saved.getBirthdate());
+        assertEquals(toAdd.getFirstName(), saved.getFirstName());
+        assertEquals(toAdd.getLastName(), saved.getLastName());
+        assertEquals(toAdd.getBirthdate(), saved.getBirthdate());
+        assertEquals(toAdd.getMedications(), saved.getMedications());
+        assertEquals(toAdd.getAllergies(), saved.getAllergies());
 
         Optional<MedicalRecord> found =
-                medicalRecordRepository.findByFirstNameAndLastName(NEW_FIRST_NAME, NEW_LAST_NAME);
+                medicalRecordRepository.findByFirstNameAndLastName(
+                        toAdd.getFirstName(), toAdd.getLastName());
         assertTrue(found.isPresent(), "The new medical record should be present in the repository");
-        assertEquals(newBirth, found.get().getBirthdate());
-        assertEquals(1, found.get().getMedications().size());
-        assertEquals(1, found.get().getAllergies().size());
+        assertEquals(toAdd.getFirstName(), found.get().getFirstName());
+        assertEquals(toAdd.getLastName(), found.get().getLastName());
+        assertEquals(toAdd.getBirthdate(), found.get().getBirthdate());
     }
 
     @Test
     void updateMedicalRecord_shouldPersistUpdate_whenExisting() {
+        MedicalRecord existing = new MedicalRecordTestBuilder().build();
         Optional<MedicalRecord> before =
                 medicalRecordRepository.findByFirstNameAndLastName(
-                        EXISTING_FIRST_NAME, EXISTING_LAST_NAME);
+                        existing.getFirstName(), existing.getLastName());
         assertTrue(
                 before.isPresent(),
                 "Precondition: existing medical record should be present in fixture");
 
-        LocalDate newBirth = LocalDate.parse(NEW_BIRTHDATE);
-
-        MedicalRecord updated =
-                new MedicalRecord(
-                        EXISTING_FIRST_NAME,
-                        EXISTING_LAST_NAME,
-                        newBirth,
-                        List.of("aspirin:500mg"),
-                        List.of("none"));
+        LocalDate newBirth = LocalDate.parse("1990-01-01");
+        MedicalRecord updated = new MedicalRecordTestBuilder().withBirthdate(newBirth).build();
 
         MedicalRecord result = medicalRecordService.updateMedicalRecord(updated);
 
         assertNotNull(result);
-        assertEquals(EXISTING_FIRST_NAME, result.getFirstName());
-        assertEquals(EXISTING_LAST_NAME, result.getLastName());
-        assertEquals(newBirth, result.getBirthdate());
-        assertEquals(1, result.getMedications().size());
+        assertEquals(updated.getFirstName(), result.getFirstName());
+        assertEquals(updated.getLastName(), result.getLastName());
+        assertEquals(updated.getBirthdate(), result.getBirthdate());
+        assertEquals(updated.getMedications(), result.getMedications());
+        assertEquals(updated.getAllergies(), result.getAllergies());
 
         Optional<MedicalRecord> found =
                 medicalRecordRepository.findByFirstNameAndLastName(
-                        EXISTING_FIRST_NAME, EXISTING_LAST_NAME);
+                        updated.getFirstName(), updated.getLastName());
         assertTrue(found.isPresent(), "The medical record should still be present after update");
-        assertEquals(newBirth, found.get().getBirthdate());
+        assertEquals(updated.getFirstName(), found.get().getFirstName());
+        assertEquals(updated.getLastName(), found.get().getLastName());
+        assertEquals(updated.getBirthdate(), found.get().getBirthdate());
     }
 
     @Test
     void deleteMedicalRecord_shouldRemove_whenExisting() {
+        MedicalRecord existing = new MedicalRecordTestBuilder().build();
         Optional<MedicalRecord> before =
                 medicalRecordRepository.findByFirstNameAndLastName(
-                        EXISTING_FIRST_NAME, EXISTING_LAST_NAME);
+                        existing.getFirstName(), existing.getLastName());
         assertTrue(before.isPresent(), "Precondition: existing medical record should be present");
 
-        medicalRecordService.deleteMedicalRecord(EXISTING_FIRST_NAME, EXISTING_LAST_NAME);
+        medicalRecordService.deleteMedicalRecord(existing.getFirstName(), existing.getLastName());
 
         Optional<MedicalRecord> after =
                 medicalRecordRepository.findByFirstNameAndLastName(
-                        EXISTING_FIRST_NAME, EXISTING_LAST_NAME);
+                        existing.getFirstName(), existing.getLastName());
         assertTrue(after.isEmpty(), "The medical record should be removed from the repository");
     }
 }

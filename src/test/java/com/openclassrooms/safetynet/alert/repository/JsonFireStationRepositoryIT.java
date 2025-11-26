@@ -3,6 +3,7 @@ package com.openclassrooms.safetynet.alert.repository;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.openclassrooms.safetynet.alert.model.FireStation;
+import com.openclassrooms.safetynet.alert.utils.FireStationTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.IntegrationTestBase;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
@@ -19,28 +20,27 @@ import java.util.Optional;
 @DisplayNameGeneration(TestSentenceGenerator.class)
 class JsonFireStationRepositoryIT extends IntegrationTestBase {
 
-    private static final String EXISTING_FIRE_STATION_ADDRESS = "1509 Culver St";
-    private static final Integer EXISTING_FIRE_STATION_NUMBER = 3;
-    private static final String NEW_FIRE_STATION_ADDRESS = "29 15th St";
-    private static final Integer NEW_FIRE_STATION_NUMBER = 4;
-
     @Autowired JsonFireStationRepository fireStationRepository;
 
     @Test
-    void save_shouldPersistFireStation_whenNewFireStation() {
-        FireStation toSave = new FireStation(NEW_FIRE_STATION_ADDRESS, NEW_FIRE_STATION_NUMBER);
+    void save_shouldPersistFireStationAndRetrieveIt_whenNewFireStation() {
+        FireStation toSave = new FireStationTestBuilder().build();
 
         fireStationRepository.save(toSave);
 
-        Optional<FireStation> saved = fireStationRepository.findByAddress(NEW_FIRE_STATION_ADDRESS);
-
-        assertTrue(saved.isPresent());
-        assertEquals(NEW_FIRE_STATION_ADDRESS, saved.get().getAddress());
-        assertEquals(NEW_FIRE_STATION_NUMBER, saved.get().getStation());
+        Optional<FireStation> saved = fireStationRepository.findByAddress(toSave.getAddress());
+        saved.ifPresentOrElse(
+                fireStation -> {
+                    assertEquals(toSave.getAddress(), fireStation.getAddress());
+                    assertEquals(toSave.getStation(), fireStation.getStation());
+                },
+                () -> fail("The saved fire station should be retrievable"));
     }
 
     @Test
     void findAll_shouldReturnEntriesFromFile_whenStoreLoaded() {
+        FireStation existing = new FireStationTestBuilder().build();
+
         List<FireStation> all = fireStationRepository.findAll();
 
         assertNotNull(all);
@@ -49,33 +49,33 @@ class JsonFireStationRepositoryIT extends IntegrationTestBase {
                 all.stream()
                         .anyMatch(
                                 fs ->
-                                        EXISTING_FIRE_STATION_ADDRESS.equals(fs.getAddress())
-                                                && EXISTING_FIRE_STATION_NUMBER.equals(
-                                                        fs.getStation())));
+                                        existing.getAddress().equals(fs.getAddress())
+                                                && existing.getStation().equals(fs.getStation())));
     }
 
     @Test
     void findByAddress_shouldReturnExistingRecord() {
-        Optional<FireStation> found =
-                fireStationRepository.findByAddress(EXISTING_FIRE_STATION_ADDRESS);
+        FireStation existing = new FireStationTestBuilder().build();
+
+        Optional<FireStation> found = fireStationRepository.findByAddress(existing.getAddress());
 
         assertTrue(found.isPresent());
-        assertEquals(EXISTING_FIRE_STATION_ADDRESS, found.get().getAddress());
-        assertEquals(EXISTING_FIRE_STATION_NUMBER, found.get().getStation());
+        assertEquals(existing.getAddress(), found.get().getAddress());
+        assertEquals(existing.getStation(), found.get().getStation());
     }
 
     @Test
     void deleteByAddress_shouldRemoveRecord_whenAddressExists() {
-        FireStation toDelete = new FireStation(NEW_FIRE_STATION_ADDRESS, NEW_FIRE_STATION_NUMBER);
+        String address = "29 15th St";
+        FireStation toDelete = new FireStationTestBuilder().withAddress(address).build();
         fireStationRepository.save(toDelete);
 
-        Optional<FireStation> before =
-                fireStationRepository.findByAddress(NEW_FIRE_STATION_ADDRESS);
+        Optional<FireStation> before = fireStationRepository.findByAddress(address);
         assertTrue(before.isPresent());
 
-        fireStationRepository.deleteByAddress(NEW_FIRE_STATION_ADDRESS);
+        fireStationRepository.deleteByAddress(address);
 
-        Optional<FireStation> after = fireStationRepository.findByAddress(NEW_FIRE_STATION_ADDRESS);
+        Optional<FireStation> after = fireStationRepository.findByAddress(address);
         assertTrue(after.isEmpty());
     }
 }

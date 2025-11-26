@@ -12,6 +12,8 @@ import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.repository.PersonRepository;
 import com.openclassrooms.safetynet.alert.service.MedicalRecordService;
 import com.openclassrooms.safetynet.alert.service.PopulationService;
+import com.openclassrooms.safetynet.alert.utils.MedicalRecordTestBuilder;
+import com.openclassrooms.safetynet.alert.utils.PersonTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -29,107 +31,58 @@ import java.util.List;
 @WebMvcTest(PopulationController.class)
 @DisplayNameGeneration(TestSentenceGenerator.class)
 public class PopulationControllerTest {
-    private static final String PERSON_A_FIRST_NAME = "John";
-    private static final String PERSON_A_LAST_NAME = "Doe";
-    private static final String PERSON_A_ADDRESS = "1509 Culver St";
-    private static final String PERSON_A_CITY = "Culver";
-    private static final String PERSON_A_ZIP = "97451";
-    private static final String PERSON_A_PHONE = "841-874-6512";
-    private static final String PERSON_A_EMAIL = "johndoe@email.com";
-    private static final String PERSON_A_BIRTHDATE = "1984-06-15";
-    private static final List<String> PERSON_A_MEDICATIONS =
-            List.of("aznol:350mg", "hydrapermazol:100mg");
-    private static final List<String> PERSON_A_ALLERGIES = List.of("nillacilan");
 
-    private static final String PERSON_B_FIRST_NAME = "Jane";
-    private static final String PERSON_B_LAST_NAME = "Smith";
-    private static final String PERSON_B_ADDRESS = "29 15th St";
-    private static final String PERSON_B_CITY = "Culver";
-    private static final String PERSON_B_ZIP = "97451";
-    private static final String PERSON_B_PHONE = "841-874-6513";
-    private static final String PERSON_B_EMAIL = "janesmith@email.com";
-    private static final String PERSON_B_BIRTHDATE = "1990-05-20";
-    private static final List<String> PERSON_B_MEDICATIONS = List.of("ibupurin:200mg");
-    private static final List<String> PERSON_B_ALLERGIES = List.of("shellfish", "peanut");
+    @Autowired MockMvc mockMvc;
 
-    private static final String PERSON_C_FIRST_NAME = "Jojo";
-    private static final String PERSON_C_LAST_NAME = PERSON_A_LAST_NAME;
-    private static final String PERSON_C_ADDRESS = PERSON_A_ADDRESS;
-    private static final String PERSON_C_CITY = PERSON_A_CITY;
-    private static final String PERSON_C_ZIP = PERSON_A_ZIP;
-    private static final String PERSON_C_PHONE = PERSON_A_PHONE;
-    private static final String PERSON_C_EMAIL = "jojodoe@email.com";
-    private static final String PERSON_C_BIRTHDATE = "2010-12-01";
-    private static final List<String> PERSON_C_MEDICATIONS = List.of();
-    private static final List<String> PERSON_C_ALLERGIES = List.of("peanut");
+    @MockitoBean PersonRepository personRepository;
 
-    private static Person personA;
-    private static Person personB;
-    private static Person personC;
-    private static MedicalRecord medicalRecordA;
-    private static MedicalRecord medicalRecordC;
+    @MockitoBean PopulationService populationService;
 
-    @Autowired private MockMvc mockMvc;
+    @MockitoBean MedicalRecordService medicalRecordService;
 
-    @MockitoBean private PersonRepository personRepository;
-    @MockitoBean private PopulationService populationService;
-    @MockitoBean private MedicalRecordService medicalRecordService;
+    Person personA;
+    Person personB;
+    Person personC;
+    MedicalRecord medicalRecordA;
+    MedicalRecord medicalRecordC;
 
     @BeforeEach
     void setUp() {
-        personA =
-                new Person(
-                        PERSON_A_FIRST_NAME,
-                        PERSON_A_LAST_NAME,
-                        PERSON_A_ADDRESS,
-                        PERSON_A_CITY,
-                        PERSON_A_ZIP,
-                        PERSON_A_PHONE,
-                        PERSON_A_EMAIL);
+        personA = new PersonTestBuilder().build();
         personB =
-                new Person(
-                        PERSON_B_FIRST_NAME,
-                        PERSON_B_LAST_NAME,
-                        PERSON_B_ADDRESS,
-                        PERSON_B_CITY,
-                        PERSON_B_ZIP,
-                        PERSON_B_PHONE,
-                        PERSON_B_EMAIL);
+                new PersonTestBuilder()
+                        .withFirstName("Jane")
+                        .withLastName("Smith")
+                        .withAddress("29 15th St")
+                        .withPhone("841-874-6513")
+                        .withEmail("janesmith@email.com")
+                        .build();
         personC =
-                new Person(
-                        PERSON_C_FIRST_NAME,
-                        PERSON_C_LAST_NAME,
-                        PERSON_C_ADDRESS,
-                        PERSON_C_CITY,
-                        PERSON_C_ZIP,
-                        PERSON_C_PHONE,
-                        PERSON_C_EMAIL);
-        medicalRecordA =
-                new MedicalRecord(
-                        PERSON_A_FIRST_NAME,
-                        PERSON_A_LAST_NAME,
-                        LocalDate.parse(PERSON_A_BIRTHDATE),
-                        PERSON_A_MEDICATIONS,
-                        PERSON_A_ALLERGIES);
+                new PersonTestBuilder()
+                        .withFirstName("Jojo")
+                        .withEmail("jojodoe@email.com")
+                        .build();
+        medicalRecordA = new MedicalRecordTestBuilder().build();
         medicalRecordC =
-                new MedicalRecord(
-                        PERSON_C_FIRST_NAME,
-                        PERSON_C_LAST_NAME,
-                        LocalDate.parse(PERSON_C_BIRTHDATE),
-                        PERSON_C_MEDICATIONS,
-                        PERSON_C_ALLERGIES);
+                new MedicalRecordTestBuilder()
+                        .withFirstName(personC.getFirstName())
+                        .withLastName(personC.getLastName())
+                        .withBirthdate(LocalDate.parse("2010-12-01"))
+                        .withMedications(List.of())
+                        .withAllergies(List.of("peanut"))
+                        .build();
     }
 
     @Test
     void getPersonListByLastName_shouldReturnPersonList_whenPersonWithLastNameExists()
             throws Exception {
-        when(populationService.getPersonListByLastName(PERSON_A_LAST_NAME))
+        when(populationService.getPersonListByLastName(personA.getLastName()))
                 .thenReturn(List.of(personA, personC));
         when(medicalRecordService.getMedicalRecordByFullName(
-                        PERSON_A_FIRST_NAME, PERSON_A_LAST_NAME))
+                        personA.getFirstName(), personA.getLastName()))
                 .thenReturn(medicalRecordA);
         when(medicalRecordService.getMedicalRecordByFullName(
-                        PERSON_C_FIRST_NAME, PERSON_C_LAST_NAME))
+                        personC.getFirstName(), personC.getLastName()))
                 .thenReturn(medicalRecordC);
         int personAAge = 40;
         when(medicalRecordService.calculateAgeFromBirthdate(medicalRecordA.getBirthdate()))
@@ -140,18 +93,40 @@ public class PopulationControllerTest {
 
         mockMvc.perform(
                         get("/personInfolastName")
-                                .param("lastName", PERSON_A_LAST_NAME)
+                                .param("lastName", personA.getLastName())
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[*].firstName", containsInAnyOrder(PERSON_A_FIRST_NAME, PERSON_C_FIRST_NAME)))
-                .andExpect(jsonPath("$[*].lastName", containsInAnyOrder(PERSON_A_LAST_NAME, PERSON_C_LAST_NAME)))
-                .andExpect(jsonPath("$[*].address", containsInAnyOrder(PERSON_A_ADDRESS, PERSON_C_ADDRESS)))
-                .andExpect(jsonPath("$[*].email", containsInAnyOrder(PERSON_A_EMAIL, PERSON_C_EMAIL)))
+                .andExpect(
+                        jsonPath(
+                                "$[*].firstName",
+                                containsInAnyOrder(personA.getFirstName(), personC.getFirstName())))
+                .andExpect(
+                        jsonPath(
+                                "$[*].lastName",
+                                containsInAnyOrder(personA.getLastName(), personC.getLastName())))
+                .andExpect(
+                        jsonPath(
+                                "$[*].address",
+                                containsInAnyOrder(personA.getAddress(), personC.getAddress())))
+                .andExpect(
+                        jsonPath(
+                                "$[*].email",
+                                containsInAnyOrder(personA.getEmail(), personC.getEmail())))
                 .andExpect(jsonPath("$[*].age", containsInAnyOrder(personAAge, personBAge)))
-                .andExpect(jsonPath("$[*].medications", containsInAnyOrder(PERSON_A_MEDICATIONS, PERSON_C_MEDICATIONS)))
-                .andExpect(jsonPath("$[*].allergies", containsInAnyOrder(PERSON_A_ALLERGIES, PERSON_C_ALLERGIES)));
+                .andExpect(
+                        jsonPath(
+                                "$[*].medications",
+                                containsInAnyOrder(
+                                        medicalRecordA.getMedications(),
+                                        medicalRecordC.getMedications())))
+                .andExpect(
+                        jsonPath(
+                                "$[*].allergies",
+                                containsInAnyOrder(
+                                        medicalRecordA.getAllergies(),
+                                        medicalRecordC.getAllergies())));
     }
 
     @Test
@@ -177,17 +152,18 @@ public class PopulationControllerTest {
 
     @Test
     void getAllEmailFromCity_shouldReturnEmailList_whenPersonsExistInCity() throws Exception {
-        when(populationService.getPersonListByCity(PERSON_A_CITY))
+        when(populationService.getPersonListByCity(personA.getCity()))
                 .thenReturn(List.of(personA, personB));
 
         mockMvc.perform(
                         get("/communityEmail")
-                                .param("city", PERSON_A_CITY)
+                                .param("city", personA.getCity())
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$", containsInAnyOrder(PERSON_A_EMAIL, PERSON_B_EMAIL)));
+                .andExpect(
+                        jsonPath("$", containsInAnyOrder(personA.getEmail(), personB.getEmail())));
     }
 
     @Test
