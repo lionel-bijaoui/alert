@@ -64,13 +64,11 @@ public class FireStationService {
                 .toList();
     }
 
-    public Integer getFireStationNumberByAddress(String address) {
-        Optional<FireStation> maybeFireStation = jsonFireStationRepository.findByAddress(address);
-        if (maybeFireStation.isPresent()) {
-            return maybeFireStation.get().getStation();
-        } else {
-            throw new ResourceNotFoundException("No fire station found for address: " + address);
-        }
+    public List<Integer> getFireStationNumberListByAddress(String address) {
+        return jsonFireStationRepository
+                .findAllByAddress(address)
+                .map(FireStation::getStation)
+                .toList();
     }
 
     public List<FireStation> getFireStationListByFireStationNumberList(

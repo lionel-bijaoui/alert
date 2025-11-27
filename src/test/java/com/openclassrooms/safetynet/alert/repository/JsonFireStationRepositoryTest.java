@@ -118,6 +118,43 @@ class JsonFireStationRepositoryTest {
     }
 
     @Test
+    void findAllByAddress_shouldBeCaseInsensitiveAndReturnStream_whenMatchingExists() {
+        FireStation fireStation = new FireStationTestBuilder().build();
+        database.getFirestations().add(fireStation);
+
+        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+
+        List<FireStation> foundFireStations =
+                fireStationRepository
+                        .findAllByAddress(fireStation.getAddress().toUpperCase())
+                        .toList();
+
+        assertNotNull(foundFireStations);
+        assertEquals(
+                1,
+                foundFireStations.size(),
+                "There should be one fire station found matching the address.");
+        assertEquals(fireStation.getAddress(), foundFireStations.getFirst().getAddress());
+        assertEquals(fireStation.getStation(), foundFireStations.getFirst().getStation());
+    }
+
+    @Test
+    void findAllByAddress_shouldReturnEmptyStream_whenNoMatchFound() {
+        FireStation fireStation = new FireStationTestBuilder().build();
+        database.getFirestations().add(fireStation);
+
+        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+
+        List<FireStation> foundFireStations =
+                fireStationRepository.findAllByAddress("Nonexistent Address 456").toList();
+
+        assertNotNull(foundFireStations);
+        assertTrue(
+                foundFireStations.isEmpty(),
+                "The returned fire stations list should be empty when no matches are found.");
+    }
+
+    @Test
     void findByAddress_shouldBeCaseInsensitiveAndFindFireStation_whenMatchingExists() {
         FireStation fireStation = new FireStationTestBuilder().build();
         database.getFirestations().add(fireStation);

@@ -54,6 +54,19 @@ class JsonFireStationRepositoryIT extends IntegrationTestBase {
     }
 
     @Test
+    void findAllByAddress_shouldReturnMatchingRecords() {
+        FireStation existing = new FireStationTestBuilder().build();
+
+        List<FireStation> found =
+                fireStationRepository.findAllByAddress(existing.getAddress()).toList();
+
+        assertFalse(found.isEmpty());
+        assertTrue(
+                found.stream()
+                        .allMatch(fs -> fs.getAddress().equalsIgnoreCase(existing.getAddress())));
+    }
+
+    @Test
     void findByAddress_shouldReturnExistingRecord() {
         FireStation existing = new FireStationTestBuilder().build();
 

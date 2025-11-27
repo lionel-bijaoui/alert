@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayNameGeneration(TestSentenceGenerator.class)
@@ -111,8 +112,7 @@ class FireStationServiceTest {
 
     @Test
     void deleteFireStation_shouldThrowResourceNotFoundException_whenNotExists() {
-        when(jsonFireStationRepository.findByAddress(any(String.class)))
-                .thenReturn(Optional.empty());
+        when(jsonFireStationRepository.findByAddress(anyString())).thenReturn(Optional.empty());
 
         assertThrows(
                 ResourceNotFoundException.class, () -> fireStationService.deleteFireStation("99"));
@@ -150,25 +150,32 @@ class FireStationServiceTest {
     }
 
     @Test
-    void getFireStationNumberByAddress_shouldReturnStationNumber_whenExists() {
-        when(jsonFireStationRepository.findByAddress(existingFireStation.getAddress()))
-                .thenReturn(Optional.of(existingFireStation));
+    void getFireStationNumberListByAddress_shouldReturnNumberList_whenExists() {
+        when(jsonFireStationRepository.findAllByAddress(existingFireStation.getAddress()))
+                .thenReturn(Stream.of(existingFireStation));
 
-        int result =
-                fireStationService.getFireStationNumberByAddress(existingFireStation.getAddress());
+        List<Integer> result =
+                fireStationService.getFireStationNumberListByAddress(
+                        existingFireStation.getAddress());
 
+        assertNotNull(result);
+        assertEquals(1, result.size());
         assertEquals(
-                (Integer) 3, result, "The returned station number should match the existing one");
+                existingFireStation.getStation(),
+                result.getFirst(),
+                "The returned station number should match the existing one");
     }
 
     @Test
-    void getFireStationNumberByAddress_shouldThrowResourceNotFoundException_whenNotExists() {
-        when(jsonFireStationRepository.findByAddress(any(String.class)))
-                .thenReturn(Optional.empty());
+    void getFireStationNumberListByAddress_shouldEmptyList_whenNotExists() {
+        when(jsonFireStationRepository.findAllByAddress(anyString())).thenReturn(Stream.of());
 
-        assertThrows(
-                ResourceNotFoundException.class,
-                () -> fireStationService.getFireStationNumberByAddress("99"));
+        List<Integer> result =
+                fireStationService.getFireStationNumberListByAddress(
+                        existingFireStation.getAddress());
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 
     @Test

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /** Repository exposing fire station-related operations backed by {@link JsonFileDataStore}. */
 @Repository
@@ -41,6 +42,12 @@ public class JsonFireStationRepository implements FireStationRepository {
     @Override
     public List<FireStation> findAll() {
         return jsonFileDataStore.readAll().map(Database::getFirestations).orElse(new ArrayList<>());
+    }
+
+    @Override
+    public Stream<FireStation> findAllByAddress(String address) {
+        return findAll().stream()
+                .filter(fireStation -> fireStation.getAddress().equalsIgnoreCase(address));
     }
 
     @Override

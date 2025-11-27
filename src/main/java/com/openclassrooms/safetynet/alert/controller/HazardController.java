@@ -1,6 +1,7 @@
 package com.openclassrooms.safetynet.alert.controller;
 
 import com.openclassrooms.safetynet.alert.dto.PersonWithMedicalInfosDTO;
+import com.openclassrooms.safetynet.alert.dto.PopulationByFireStationsDTO;
 import com.openclassrooms.safetynet.alert.model.FireStation;
 import com.openclassrooms.safetynet.alert.service.FireStationService;
 import com.openclassrooms.safetynet.alert.service.MedicalRecordService;
@@ -56,6 +57,29 @@ public class HazardController {
                 populationService.getPersonListByAddressList(addressList).stream()
                         .map(medicalRecordService::mapToPersonWithMedicalInfosDTO)
                         .collect(Collectors.groupingBy(PersonWithMedicalInfosDTO::address));
+
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
+
+    /**
+     * Return a list of residents living at the given address, as well as the number of the fire
+     * station serving that address. The list must include the name, phone number, age, and medical
+     * history (medications, dosage, and allergies) of each person.
+     *
+     * @param address
+     * @return
+     */
+    @RequestMapping("/fire")
+    public ResponseEntity<PopulationByFireStationsDTO> getPersonAndFireStationListByAddress(
+            @RequestParam String address) {
+        List<PersonWithMedicalInfosDTO> personList =
+                populationService.getPersonListByAddress(address).stream()
+                        .map(medicalRecordService::mapToPersonWithMedicalInfosDTO)
+                        .toList();
+        List<Integer> fireStationNumberList =
+                fireStationService.getFireStationNumberListByAddress(address);
+        PopulationByFireStationsDTO result =
+                new PopulationByFireStationsDTO(fireStationNumberList, personList);
 
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
