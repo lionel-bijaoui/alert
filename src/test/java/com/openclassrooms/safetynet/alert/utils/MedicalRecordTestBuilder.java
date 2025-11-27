@@ -8,7 +8,7 @@ import java.util.List;
 public class MedicalRecordTestBuilder {
     private String firstName = "John";
     private String lastName = "Doe";
-    private LocalDate birthdate = LocalDate.of(1984, 3, 6); // example
+    private LocalDate birthdate = LocalDate.of(1984, 3, 18);
     private List<String> medications = List.of("aznol:350mg", "hydrapermazol:100mg");
     private List<String> allergies = List.of("nillacilan");
 

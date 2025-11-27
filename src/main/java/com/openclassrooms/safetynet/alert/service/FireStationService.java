@@ -60,6 +60,7 @@ public class FireStationService {
     public List<String> getFireStationAddressListByFireStationNumber(Integer stationNumber) {
         return jsonFireStationRepository.findByStationNumber(stationNumber).stream()
                 .map(FireStation::getAddress)
+                .distinct()
                 .toList();
     }
 

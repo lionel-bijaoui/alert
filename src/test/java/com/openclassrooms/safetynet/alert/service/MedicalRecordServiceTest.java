@@ -150,13 +150,17 @@ class MedicalRecordServiceTest {
                         existingMedicalRecord.getFirstName(), existingMedicalRecord.getLastName()))
                 .thenReturn(Optional.ofNullable(existingMedicalRecord));
 
-        MedicalRecord found =
+        Optional<MedicalRecord> optionalMedicalRecord =
                 medicalRecordService.getMedicalRecordByFullName(
                         existingMedicalRecord.getFirstName(), existingMedicalRecord.getLastName());
 
-        assertNotNull(found);
-        assertEquals(existingMedicalRecord.getFirstName(), found.getFirstName());
-        assertEquals(existingMedicalRecord.getLastName(), found.getLastName());
+        optionalMedicalRecord.ifPresentOrElse(
+                mr -> {
+                    assertEquals(existingMedicalRecord, mr);
+                    assertEquals(existingMedicalRecord.getFirstName(), mr.getFirstName());
+                    assertEquals(existingMedicalRecord.getLastName(), mr.getLastName());
+                },
+                () -> fail("Expected medical record to be present"));
     }
 
     @Test
@@ -165,9 +169,10 @@ class MedicalRecordServiceTest {
                         any(String.class), any(String.class)))
                 .thenReturn(Optional.empty());
 
-        MedicalRecord found = medicalRecordService.getMedicalRecordByFullName("No", "Body");
+        Optional<MedicalRecord> optionalMedicalRecord =
+                medicalRecordService.getMedicalRecordByFullName("No", "Body");
 
-        assertNull(found);
+        assertTrue(optionalMedicalRecord.isEmpty());
     }
 
     @Test

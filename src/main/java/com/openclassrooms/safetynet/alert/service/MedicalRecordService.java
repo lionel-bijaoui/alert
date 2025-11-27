@@ -1,6 +1,7 @@
 package com.openclassrooms.safetynet.alert.service;
 
 import com.openclassrooms.safetynet.alert.dto.PersonWithAge;
+import com.openclassrooms.safetynet.alert.dto.PersonWithMedicalInfosDTO;
 import com.openclassrooms.safetynet.alert.exception.ConflictException;
 import com.openclassrooms.safetynet.alert.exception.ResourceNotFoundException;
 import com.openclassrooms.safetynet.alert.model.MedicalRecord;
@@ -71,10 +72,8 @@ public class MedicalRecordService {
 
     // Additional methods
 
-    public MedicalRecord getMedicalRecordByFullName(String firstName, String lastName) {
-        Optional<MedicalRecord> maybeMedicalRecord =
-                medicalRecordRepository.findByFirstNameAndLastName(firstName, lastName);
-        return maybeMedicalRecord.orElse(null);
+    public Optional<MedicalRecord> getMedicalRecordByFullName(String firstName, String lastName) {
+        return medicalRecordRepository.findByFirstNameAndLastName(firstName, lastName);
     }
 
     public Integer calculateAgeFromBirthdate(LocalDate birthdate) {
@@ -103,6 +102,41 @@ public class MedicalRecordService {
                                                 getMedicalRecordByFullName(
                                                                 person.getFirstName(),
                                                                 person.getLastName())
+                                                        .orElseThrow(
+                                                                () ->
+                                                                        new ResourceNotFoundException(
+                                                                                "No medical record found for: "
+                                                                                        + person
+                                                                                                .getFirstName()
+                                                                                        + " "
+                                                                                        + person
+                                                                                                .getLastName()))
                                                         .getBirthdate())));
+    }
+
+    public PersonWithMedicalInfosDTO mapToPersonWithMedicalInfosDTO(Person person) {
+        return getMedicalRecordByFullName(person.getFirstName(), person.getLastName())
+                .map(
+                        medicalRecord ->
+                                new PersonWithMedicalInfosDTO(
+                                        person.getFirstName(),
+                                        person.getLastName(),
+                                        person.getAddress(),
+                                        person.getPhone(),
+                                        person.getEmail(),
+                                        calculateAgeFromBirthdate(medicalRecord.getBirthdate()),
+                                        medicalRecord.getMedications(),
+                                        medicalRecord.getAllergies()))
+                .orElseGet(
+                        () ->
+                                new PersonWithMedicalInfosDTO(
+                                        person.getFirstName(),
+                                        person.getLastName(),
+                                        person.getAddress(),
+                                        person.getPhone(),
+                                        person.getEmail(),
+                                        null,
+                                        List.of(),
+                                        List.of()));
     }
 }

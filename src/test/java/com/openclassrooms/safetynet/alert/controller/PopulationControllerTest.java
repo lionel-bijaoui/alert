@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.openclassrooms.safetynet.alert.dto.PersonWithMedicalInfosDTO;
 import com.openclassrooms.safetynet.alert.model.MedicalRecord;
 import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.repository.PersonRepository;
@@ -78,18 +79,30 @@ public class PopulationControllerTest {
             throws Exception {
         when(populationService.getPersonListByLastName(personA.getLastName()))
                 .thenReturn(List.of(personA, personC));
-        when(medicalRecordService.getMedicalRecordByFullName(
-                        personA.getFirstName(), personA.getLastName()))
-                .thenReturn(medicalRecordA);
-        when(medicalRecordService.getMedicalRecordByFullName(
-                        personC.getFirstName(), personC.getLastName()))
-                .thenReturn(medicalRecordC);
         int personAAge = 40;
-        when(medicalRecordService.calculateAgeFromBirthdate(medicalRecordA.getBirthdate()))
-                .thenReturn(personAAge);
         int personBAge = 14;
-        when(medicalRecordService.calculateAgeFromBirthdate(medicalRecordC.getBirthdate()))
-                .thenReturn(personBAge);
+        when(medicalRecordService.mapToPersonWithMedicalInfosDTO(personA))
+                .thenReturn(
+                        new PersonWithMedicalInfosDTO(
+                                personA.getFirstName(),
+                                personA.getLastName(),
+                                personA.getAddress(),
+                                null,
+                                personA.getEmail(),
+                                personAAge,
+                                medicalRecordA.getMedications(),
+                                medicalRecordA.getAllergies()));
+        when(medicalRecordService.mapToPersonWithMedicalInfosDTO(personC))
+                .thenReturn(
+                        new PersonWithMedicalInfosDTO(
+                                personC.getFirstName(),
+                                personC.getLastName(),
+                                personC.getAddress(),
+                                null,
+                                personC.getEmail(),
+                                personBAge,
+                                medicalRecordC.getMedications(),
+                                medicalRecordC.getAllergies()));
 
         mockMvc.perform(
                         get("/personInfolastName")

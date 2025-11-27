@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Optional;
 
 /** Controller for handling population-related requests. */
 @RestController
@@ -35,35 +34,8 @@ public class PopulationController {
     @RequestMapping("/personInfolastName")
     public List<PersonWithMedicalInfosDTO> getPersonListByLastName(@RequestParam String lastName) {
         return populationService.getPersonListByLastName(lastName).stream()
-                .map(this::mapToPersonInfoDTO)
+                .map(medicalRecordService::mapToPersonWithMedicalInfosDTO)
                 .toList();
-    }
-
-    private PersonWithMedicalInfosDTO mapToPersonInfoDTO(Person person) {
-        return Optional.ofNullable(
-                        medicalRecordService.getMedicalRecordByFullName(
-                                person.getFirstName(), person.getLastName()))
-                .map(
-                        medicalRecord ->
-                                new PersonWithMedicalInfosDTO(
-                                        person.getFirstName(),
-                                        person.getLastName(),
-                                        person.getAddress(),
-                                        person.getEmail(),
-                                        medicalRecordService.calculateAgeFromBirthdate(
-                                                medicalRecord.getBirthdate()),
-                                        medicalRecord.getMedications(),
-                                        medicalRecord.getAllergies()))
-                .orElseGet(
-                        () ->
-                                new PersonWithMedicalInfosDTO(
-                                        person.getFirstName(),
-                                        person.getLastName(),
-                                        person.getAddress(),
-                                        person.getEmail(),
-                                        null,
-                                        List.of(),
-                                        List.of()));
     }
 
     /**

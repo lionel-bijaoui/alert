@@ -113,13 +113,17 @@ class MedicalRecordServiceIT extends IntegrationTestBase {
                         existing.getFirstName(), existing.getLastName());
         assertTrue(before.isPresent(), "Precondition: existing medical record should be present");
 
-        MedicalRecord result =
+        Optional<MedicalRecord> optionalMedicalRecord =
                 medicalRecordService.getMedicalRecordByFullName(
                         existing.getFirstName(), existing.getLastName());
 
-        assertNotNull(result);
-        assertEquals(existing.getFirstName(), result.getFirstName());
-        assertEquals(existing.getLastName(), result.getLastName());
+        optionalMedicalRecord.ifPresentOrElse(
+                mr -> {
+                    assertEquals(existing, mr);
+                    assertEquals(existing.getFirstName(), mr.getFirstName());
+                    assertEquals(existing.getLastName(), mr.getLastName());
+                },
+                () -> fail("Expected medical record to be present"));
     }
 
     @Test
