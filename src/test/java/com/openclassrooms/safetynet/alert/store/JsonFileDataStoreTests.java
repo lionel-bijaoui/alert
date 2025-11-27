@@ -68,6 +68,22 @@ public class JsonFileDataStoreTests {
     }
 
     @Test
+    void load_shouldThrowRuntimeException_whenIOExceptionOccursDuringLoad() throws IOException {
+        when(fileOperations.notExists(any(Path.class))).thenReturn(true);
+        doNothing().when(fileOperations).createDirectories(any(Path.class));
+        doThrow(IOException.class)
+                .when(fileOperations)
+                .copy(any(Path.class), any(Path.class), any(StandardCopyOption.class));
+
+        assertThrows(RuntimeException.class, () -> store.load());
+
+        verify(fileOperations, times(2)).notExists(any(Path.class));
+        verify(fileOperations).createDirectories(any(Path.class));
+        verify(fileOperations)
+                .copy(any(Path.class), any(Path.class), any(StandardCopyOption.class));
+    }
+
+    @Test
     void readAll_shouldReturnDatabase_whenCurrentFilePresent() throws Exception {
         String json =
 """
@@ -124,6 +140,17 @@ public class JsonFileDataStoreTests {
                     assertFalse(database.getMedicalrecords().isEmpty());
                 },
                 () -> fail("Database should be present"));
+    }
+
+    @Test
+    void readAll_shouldReturnEmptyOptional_whenCurrentFileMissing() {
+        File jsonFile = new File("nonexistent.json");
+        when(fileOperations.getFile(CURRENT_PATH_STRING)).thenReturn(jsonFile);
+
+        Optional<Database> optionalDatabase = store.readAll();
+
+        verify(fileOperations).getFile(CURRENT_PATH_STRING);
+        assertTrue(optionalDatabase.isEmpty());
     }
 
     @Test

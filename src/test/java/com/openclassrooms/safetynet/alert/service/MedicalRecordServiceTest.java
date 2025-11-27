@@ -209,4 +209,54 @@ class MedicalRecordServiceTest {
         assertEquals(1, enrichedList.size());
         assertEquals(41, enrichedList.getFirst().age());
     }
+
+    @Test
+    void enrichPersonsWithAge_shouldThrow_whenMedicalRecordNotExists() {
+        Person person = new PersonTestBuilder().build();
+        List<Person> persons = List.of(person);
+
+        when(medicalRecordRepository.findByFirstNameAndLastName(
+                        person.getFirstName(), person.getLastName()))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> medicalRecordService.enrichPersonsWithAge(persons).toList());
+    }
+
+    @Test
+    void mapToPersonWithMedicalInfosDTO_shouldReturnDTO_whenMedicalRecordExists() {
+        Person person = new PersonTestBuilder().build();
+        MedicalRecord medicalRecord = new MedicalRecordTestBuilder().build();
+
+        when(medicalRecordRepository.findByFirstNameAndLastName(
+                        person.getFirstName(), person.getLastName()))
+                .thenReturn(Optional.of(medicalRecord));
+
+        var dto = medicalRecordService.mapToPersonWithMedicalInfosDTO(person);
+
+        assertNotNull(dto);
+        assertEquals(person.getFirstName(), dto.firstName());
+        assertEquals(person.getLastName(), dto.lastName());
+        assertEquals(medicalRecord.getMedications(), dto.medications());
+        assertEquals(medicalRecord.getAllergies(), dto.allergies());
+    }
+
+    @Test
+    void
+            mapToPersonWithMedicalInfosDTO_shouldReturnDTOWithoutMedicalInfos_whenMedicalRecordNotExists() {
+        Person person = new PersonTestBuilder().build();
+
+        when(medicalRecordRepository.findByFirstNameAndLastName(
+                        person.getFirstName(), person.getLastName()))
+                .thenReturn(Optional.empty());
+
+        var dto = medicalRecordService.mapToPersonWithMedicalInfosDTO(person);
+
+        assertNotNull(dto);
+        assertEquals(person.getFirstName(), dto.firstName());
+        assertEquals(person.getLastName(), dto.lastName());
+        assertTrue(dto.medications().isEmpty());
+        assertTrue(dto.allergies().isEmpty());
+    }
 }
