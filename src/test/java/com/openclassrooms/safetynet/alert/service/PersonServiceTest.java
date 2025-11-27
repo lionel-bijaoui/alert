@@ -99,15 +99,14 @@ class PersonServiceTest {
         Person nonExistingPerson =
                 new PersonTestBuilder().withFirstName("Nobody").withLastName("Here").build();
 
-        when(jsonPersonRepository.findByFirstNameAndLastName(any(String.class), any(String.class)))
+        when(jsonPersonRepository.findByFirstNameAndLastName(anyString(), anyString()))
                 .thenReturn(Optional.empty());
 
         assertThrows(
                 ResourceNotFoundException.class,
                 () -> personService.updatePerson(nonExistingPerson));
 
-        verify(jsonPersonRepository, times(1))
-                .findByFirstNameAndLastName(any(String.class), any(String.class));
+        verify(jsonPersonRepository, times(1)).findByFirstNameAndLastName(anyString(), anyString());
         verify(jsonPersonRepository, never()).save(any());
     }
 
@@ -131,7 +130,7 @@ class PersonServiceTest {
 
     @Test
     void deletePerson_shouldThrowResourceNotFoundException_whenNotExists() {
-        when(jsonPersonRepository.findByFirstNameAndLastName(any(String.class), any(String.class)))
+        when(jsonPersonRepository.findByFirstNameAndLastName(anyString(), anyString()))
                 .thenReturn(Optional.empty());
 
         assertThrows(

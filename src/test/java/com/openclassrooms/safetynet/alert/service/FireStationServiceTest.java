@@ -140,8 +140,7 @@ class FireStationServiceTest {
 
     @Test
     void getFireStationAddressListByFireStationNumber_shouldReturnEmptyList_whenNoneExists() {
-        when(jsonFireStationRepository.findByStationNumber(any(Integer.class)))
-                .thenReturn(List.of());
+        when(jsonFireStationRepository.findByStationNumber(anyInt())).thenReturn(List.of());
 
         List<String> result = fireStationService.getFireStationAddressListByFireStationNumber(99);
 

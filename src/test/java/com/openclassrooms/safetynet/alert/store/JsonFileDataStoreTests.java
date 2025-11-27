@@ -135,11 +135,11 @@ public class JsonFileDataStoreTests {
                         new ArrayList<>());
 
         File jsonFile = tempDirectory.resolve("current.json").toFile();
-        when(fileOperations.getFile(any(String.class))).thenReturn(jsonFile);
+        when(fileOperations.getFile(anyString())).thenReturn(jsonFile);
 
         store.writeAll(database);
 
-        verify(fileOperations).getFile(any(String.class));
+        verify(fileOperations).getFile(anyString());
 
         Optional<Database> optionalDatabase = store.readAll();
         optionalDatabase.ifPresentOrElse(
@@ -170,11 +170,11 @@ public class JsonFileDataStoreTests {
                         null);
 
         File jsonFile = tempDirectory.resolve("current.json").toFile();
-        when(fileOperations.getFile(any(String.class))).thenReturn(jsonFile);
+        when(fileOperations.getFile(anyString())).thenReturn(jsonFile);
 
         store.writeAll(newDatabase);
 
-        verify(fileOperations).getFile(any(String.class));
+        verify(fileOperations).getFile(anyString());
 
         Optional<Database> optionalDatabase = store.readAll();
         optionalDatabase.ifPresentOrElse(

@@ -133,8 +133,7 @@ class MedicalRecordServiceTest {
 
     @Test
     void deleteMedicalRecord_shouldThrowResourceNotFoundException_whenNotExists() {
-        when(medicalRecordRepository.findByFirstNameAndLastName(
-                        any(String.class), any(String.class)))
+        when(medicalRecordRepository.findByFirstNameAndLastName(anyString(), anyString()))
                 .thenReturn(Optional.empty());
 
         assertThrows(
@@ -165,8 +164,7 @@ class MedicalRecordServiceTest {
 
     @Test
     void getMedicalRecordByFullName_shouldReturnNull_whenNotExists() {
-        when(medicalRecordRepository.findByFirstNameAndLastName(
-                        any(String.class), any(String.class)))
+        when(medicalRecordRepository.findByFirstNameAndLastName(anyString(), anyString()))
                 .thenReturn(Optional.empty());
 
         Optional<MedicalRecord> optionalMedicalRecord =
