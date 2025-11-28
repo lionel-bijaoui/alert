@@ -1,10 +1,14 @@
 package com.openclassrooms.safetynet.alert.model;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /** Simple container representing the JSON database structure used by the app. */
@@ -13,7 +17,12 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Database {
 
-    public List<Person> persons;
-    public List<FireStation> firestations;
-    public List<MedicalRecord> medicalrecords;
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    public List<Person> persons = new ArrayList<>();
+
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    public List<FireStation> firestations = new ArrayList<>();
+
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    public List<MedicalRecord> medicalrecords = new ArrayList<>();
 }

@@ -194,7 +194,7 @@ public class JsonFileDataStoreTests {
                                         .withEmail("test@email.com")
                                         .build()),
                         new ArrayList<>(),
-                        null);
+                        new ArrayList<>());
 
         File jsonFile = tempDirectory.resolve("current.json").toFile();
         when(fileOperations.getFile(anyString())).thenReturn(jsonFile);
@@ -208,7 +208,7 @@ public class JsonFileDataStoreTests {
                 database -> {
                     assertEquals(1, database.getPersons().size());
                     assertTrue(database.getFirestations().isEmpty());
-                    assertNull(database.getMedicalrecords());
+                    assertInstanceOf(List.class, database.getMedicalrecords());
                 },
                 () -> fail("Database should be present"));
     }

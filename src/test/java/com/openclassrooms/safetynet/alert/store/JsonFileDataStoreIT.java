@@ -3,7 +3,6 @@ package com.openclassrooms.safetynet.alert.store;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.openclassrooms.safetynet.alert.model.Database;
@@ -69,7 +68,7 @@ public class JsonFileDataStoreIT extends IntegrationTestBase {
                                         .withEmail("test@email.com")
                                         .build()),
                         List.of(),
-                        null);
+                        List.of());
 
         // Write modified database
         store.writeAll(newDb);
@@ -89,9 +88,10 @@ public class JsonFileDataStoreIT extends IntegrationTestBase {
                             database.getFirestations() != null
                                     && database.getFirestations().isEmpty(),
                             "The fire stations list must be empty after the modified write.");
-                    assertNull(
-                            database.getMedicalrecords(),
-                            "The medical records list must be null after the modified write.");
+                    assertTrue(
+                            database.getMedicalrecords() != null
+                                    && database.getMedicalrecords().isEmpty(),
+                            "The medical records list must be empty after the modified write.");
                 },
                 () -> {
                     throw new AssertionError("The database must be readable after writing.");
