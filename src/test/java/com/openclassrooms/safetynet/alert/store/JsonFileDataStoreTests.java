@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.openclassrooms.safetynet.alert.configuration.DataStoreProperties;
 import com.openclassrooms.safetynet.alert.model.Database;
 import com.openclassrooms.safetynet.alert.utils.PersonTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
@@ -46,9 +47,12 @@ public class JsonFileDataStoreTests {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        store =
-                new JsonFileDataStore(
-                        mapper, CURRENT_PATH_STRING, INITIAL_PATH_STRING, fileOperations);
+
+        DataStoreProperties dataStoreProperties = new DataStoreProperties();
+        dataStoreProperties.setCurrent(CURRENT_PATH_STRING);
+        dataStoreProperties.setInitial(INITIAL_PATH_STRING);
+
+        store = new JsonFileDataStore(mapper, dataStoreProperties, fileOperations);
     }
 
     @Test

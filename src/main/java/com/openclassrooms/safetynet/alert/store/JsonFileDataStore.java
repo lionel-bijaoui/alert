@@ -1,11 +1,11 @@
 package com.openclassrooms.safetynet.alert.store;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.openclassrooms.safetynet.alert.configuration.DataStoreProperties;
 import com.openclassrooms.safetynet.alert.model.Database;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -33,13 +33,12 @@ public class JsonFileDataStore {
     private final ObjectMapper objectMapper;
 
     public JsonFileDataStore(
-        ObjectMapper objectMapper,
-            @Value("${data.store.path.current}") String current,
-            @Value("${data.store.path.initial}") String initial,
+            ObjectMapper objectMapper,
+            DataStoreProperties properties,
             FilesOperations fileOperations) {
         this.objectMapper = objectMapper;
-        this.current = current;
-        this.initial = initial;
+        this.current = properties.getCurrent();
+        this.initial = properties.getInitial();
         this.fileOperations = fileOperations;
     }
 
