@@ -27,8 +27,8 @@ public class PersonController {
     /**
      * Add a new person
      *
-     * @param dto
-     * @return
+     * @param dto the person DTO to add
+     * @return the created person DTO
      */
     @PostMapping
     public ResponseEntity<PersonDTO> addPerson(@Valid @RequestBody PersonDTO dto) {
@@ -41,8 +41,8 @@ public class PersonController {
     /**
      * Update an existing person
      *
-     * @param dto
-     * @return
+     * @param dto the person DTO to update
+     * @return the updated person DTO
      */
     @PutMapping
     public ResponseEntity<PersonDTO> updatePerson(@Valid @RequestBody PersonDTO dto) {
@@ -55,8 +55,8 @@ public class PersonController {
     /**
      * Delete a person
      *
-     * @param firstName
-     * @param lastName
+     * @param firstName the first name of the person to delete
+     * @param lastName the last name of the person to delete
      */
     @DeleteMapping
     public void deletePerson(@RequestParam String firstName, @RequestParam String lastName) {

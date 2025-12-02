@@ -39,8 +39,8 @@ public class HazardController {
      * address. It must also include the name, phone number, and age of the residents, and list
      * their medical history (medications, dosage, and allergies) next to each name.
      *
-     * @param fireStationNumberList
-     * @return
+     * @param fireStationNumberList a list of fire station numbers
+     * @return a map of address to list of persons with medical infos
      */
     @RequestMapping("/flood/stations")
     public ResponseEntity<Map<String, List<PersonWithMedicalInfosDTO>>>
@@ -66,8 +66,8 @@ public class HazardController {
      * station serving that address. The list must include the name, phone number, age, and medical
      * history (medications, dosage, and allergies) of each person.
      *
-     * @param address
-     * @return
+     * @param address the address to search for residents
+     * @return a PopulationByFireStationsDTO
      */
     @RequestMapping("/fire")
     public ResponseEntity<PopulationByFireStationsDTO> getPersonAndFireStationListByAddress(

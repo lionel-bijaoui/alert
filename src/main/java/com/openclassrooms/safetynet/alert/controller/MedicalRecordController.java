@@ -28,8 +28,8 @@ public class MedicalRecordController {
     /**
      * Add a medical record
      *
-     * @param dto
-     * @return
+     * @param dto the medical record DTO to add
+     * @return the created medical record DTO
      */
     @PostMapping
     public ResponseEntity<MedicalRecordDTO> addMedicalRecord(
@@ -43,8 +43,8 @@ public class MedicalRecordController {
     /**
      * Update an existing medical record
      *
-     * @param dto
-     * @return
+     * @param dto the medical record DTO to update
+     * @return the updated medical record DTO
      */
     @PutMapping
     public ResponseEntity<MedicalRecordDTO> updateMedicalRecord(
@@ -58,8 +58,8 @@ public class MedicalRecordController {
     /**
      * Delete a medical record
      *
-     * @param firstName
-     * @param lastName
+     * @param firstName first name of the person
+     * @param lastName last name of the person
      */
     @DeleteMapping
     public void deleteMedicalRecord(@RequestParam String firstName, @RequestParam String lastName) {

@@ -28,8 +28,8 @@ public class PopulationController {
      * Return the name, address, age, email address, and medical history (medications, dosage, and
      * allergies) of each resident. If several people have the same name, they must all appear.
      *
-     * @param lastName
-     * @return
+     * @param lastName the last name of the person
+     * @return a list of persons with medical infos
      */
     @RequestMapping("/personInfolastName")
     public List<PersonWithMedicalInfosDTO> getPersonListByLastName(@RequestParam String lastName) {
@@ -41,8 +41,8 @@ public class PopulationController {
     /**
      * Return the email addresses of all residents of the city.
      *
-     * @param city
-     * @return
+     * @param city the city name
+     * @return a list of email addresses
      */
     @RequestMapping("/communityEmail")
     public List<String> getAllEmailFromCity(@RequestParam String city) {
