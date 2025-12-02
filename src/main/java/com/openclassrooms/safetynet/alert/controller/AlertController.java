@@ -43,8 +43,8 @@ public class AlertController {
      * Return a list of phone numbers of residents served by the fire station. We will use it to
      * send emergency text messages to specific households.
      *
-     * @param firestation
-     * @return
+     * @param firestation the fire station number
+     * @return a list of phone numbers of residents served by the fire station
      */
     @RequestMapping("/phoneAlert")
     public List<String> getPhoneNumberListByFireStationNumber(@RequestParam int firestation) {
@@ -62,8 +62,8 @@ public class AlertController {
      * must include each child's first and last name, their age, and a list of other members of the
      * household. If there are no children, return an empty string.
      *
-     * @param address
-     * @return
+     * @param address the address to search for children
+     * @return a ChildrenAndAdultsDTO
      */
     @RequestMapping("/childAlert")
     public ChildrenAndAdultsDTO getChildrenListByAddress(@RequestParam String address) {
@@ -71,8 +71,7 @@ public class AlertController {
 
         // Partition into children and adults
         Map<Boolean, List<PersonWithAge>> partitioned =
-                medicalRecordService
-                        .enrichPersonsWithAge(personsAtAddress)
+                medicalRecordService.enrichPersonsWithAge(personsAtAddress).stream()
                         .collect(Collectors.partitioningBy(p -> p.age() <= 18));
 
         List<ChildDTO> children =

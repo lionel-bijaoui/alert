@@ -31,7 +31,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 @WebMvcTest(FireStationController.class)
 @DisplayNameGeneration(TestSentenceGenerator.class)
@@ -162,7 +161,7 @@ class FireStationControllerTest {
         when(populationService.getPersonListByAddressList(anyList()))
                 .thenReturn(List.of(adult, child));
         when(medicalRecordService.enrichPersonsWithAge(any()))
-                .thenReturn(Stream.of(new PersonWithAge(adult, 99), new PersonWithAge(child, 1)));
+                .thenReturn(List.of(new PersonWithAge(adult, 99), new PersonWithAge(child, 1)));
 
         mockMvc.perform(get("/firestation").param("stationNumber", String.valueOf(stationNumber)))
                 .andExpect(status().isOk())

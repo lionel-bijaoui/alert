@@ -16,7 +16,6 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 /** Service class for managing medical records. */
 @Service
@@ -89,10 +88,10 @@ public class MedicalRecordService {
     /**
      * Enrich a list of persons with their respective ages to cache ages and avoid multiple lookups
      *
-     * @param persons
+     * @param persons list of person
      * @return Stream of PersonWithAge
      */
-    public Stream<PersonWithAge> enrichPersonsWithAge(List<Person> persons) {
+    public List<PersonWithAge> enrichPersonsWithAge(List<Person> persons) {
         return persons.stream()
                 .map(
                         person ->
@@ -111,7 +110,8 @@ public class MedicalRecordService {
                                                                                         + " "
                                                                                         + person
                                                                                                 .getLastName()))
-                                                        .getBirthdate())));
+                                                        .getBirthdate())))
+                .toList();
     }
 
     public PersonWithMedicalInfosDTO mapToPersonWithMedicalInfosDTO(Person person) {

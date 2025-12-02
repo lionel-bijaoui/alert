@@ -24,7 +24,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayNameGeneration(TestSentenceGenerator.class)
@@ -203,9 +202,8 @@ class MedicalRecordServiceTest {
                         person.getFirstName(), person.getLastName()))
                 .thenReturn(Optional.of(medicalRecord));
 
-        Stream<PersonWithAge> enrichedStream = medicalRecordService.enrichPersonsWithAge(persons);
+        List<PersonWithAge> enrichedList = medicalRecordService.enrichPersonsWithAge(persons);
 
-        List<PersonWithAge> enrichedList = enrichedStream.toList();
         assertEquals(1, enrichedList.size());
         assertEquals(41, enrichedList.getFirst().age());
     }
@@ -221,7 +219,7 @@ class MedicalRecordServiceTest {
 
         assertThrows(
                 ResourceNotFoundException.class,
-                () -> medicalRecordService.enrichPersonsWithAge(persons).toList());
+                () -> medicalRecordService.enrichPersonsWithAge(persons));
     }
 
     @Test

@@ -32,7 +32,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 @WebMvcTest(AlertController.class)
 @DisplayNameGeneration(TestSentenceGenerator.class)
@@ -112,7 +111,7 @@ public class AlertControllerTest {
         personList.add(child);
         when(populationService.getPersonListByAddress(person.getAddress())).thenReturn(personList);
         when(medicalRecordService.enrichPersonsWithAge(any()))
-                .thenReturn(Stream.of(new PersonWithAge(person, 99), new PersonWithAge(child, 1)));
+                .thenReturn(List.of(new PersonWithAge(person, 99), new PersonWithAge(child, 1)));
 
         mockMvc.perform(get("/childAlert").param("address", person.getAddress()))
                 .andExpect(status().isOk())

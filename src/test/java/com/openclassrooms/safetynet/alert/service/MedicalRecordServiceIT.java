@@ -131,9 +131,8 @@ class MedicalRecordServiceIT extends IntegrationTestBase {
         Person person = new PersonTestBuilder().build();
         List<Person> persons = List.of(person);
 
-        var enrichedStream = medicalRecordService.enrichPersonsWithAge(persons);
+        var enrichedList = medicalRecordService.enrichPersonsWithAge(persons);
 
-        var enrichedList = enrichedStream.toList();
         assertEquals(1, enrichedList.size());
         assertEquals(41, enrichedList.getFirst().age());
     }

@@ -49,8 +49,8 @@ public class FireStationController {
     /**
      * Add a fire station/address mapping
      *
-     * @param dto
-     * @return
+     * @param dto the FireStationDTO to add
+     * @return the created FireStationDTO
      */
     @PostMapping
     public ResponseEntity<FireStationDTO> addFireStation(@Valid @RequestBody FireStationDTO dto) {
@@ -63,8 +63,8 @@ public class FireStationController {
     /**
      * Update the fire station number for an address
      *
-     * @param dto
-     * @return
+     * @param dto the FireStationDTO to update
+     * @return the updated FireStationDTO
      */
     @PutMapping
     public ResponseEntity<FireStationDTO> updateFireStation(
@@ -78,7 +78,7 @@ public class FireStationController {
     /**
      * Delete the mapping for a fire station or address
      *
-     * @param address
+     * @param address the address of the fire station to delete
      */
     @DeleteMapping
     public void deleteFireStation(@RequestParam String address) {
@@ -92,8 +92,8 @@ public class FireStationController {
      * must provide a count of the number of adults and the number of children (any individual aged
      * 18 or younger) in the area served.
      *
-     * @param stationNumber
-     * @return
+     * @param stationNumber the fire station number
+     * @return a PopulationByFireStationDTO
      */
     @GetMapping
     public ResponseEntity<PopulationByFireStationDTO> getPersonListByStationNumber(
@@ -103,8 +103,7 @@ public class FireStationController {
                         fireStationService.getFireStationAddressListByFireStationNumber(
                                 stationNumber));
         Map<Boolean, List<PersonSummaryDTO>> personsAtFireStationAddressByAgeGroup =
-                medicalRecordService
-                        .enrichPersonsWithAge(personsAtFireStationAddress)
+                medicalRecordService.enrichPersonsWithAge(personsAtFireStationAddress).stream()
                         .collect(
                                 Collectors.partitioningBy(
                                         personWithAge -> personWithAge.age() <= 18,
