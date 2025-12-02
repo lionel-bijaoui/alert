@@ -28,6 +28,16 @@ public class MedicalRecordService {
         this.medicalRecordRepository = medicalRecordRepository;
     }
 
+    public static Integer calculateAgeFromBirthdate(LocalDate birthdate) {
+        LocalDate currentDate = LocalDate.now();
+        if ((birthdate != null)
+                && (birthdate.isBefore(currentDate) || birthdate.isEqual(currentDate))) {
+            return Period.between(birthdate, currentDate).getYears();
+        } else {
+            throw new IllegalArgumentException("Birthdate is invalid " + birthdate);
+        }
+    }
+
     // CRUD operations for MedicalRecord
 
     @NotNull
@@ -74,16 +84,6 @@ public class MedicalRecordService {
 
     public Optional<MedicalRecord> getMedicalRecordByFullName(String firstName, String lastName) {
         return medicalRecordRepository.findByFirstNameAndLastName(firstName, lastName);
-    }
-
-    public Integer calculateAgeFromBirthdate(LocalDate birthdate) {
-        LocalDate currentDate = LocalDate.now();
-        if ((birthdate != null)
-                && (birthdate.isBefore(currentDate) || birthdate.isEqual(currentDate))) {
-            return Period.between(birthdate, currentDate).getYears();
-        } else {
-            throw new IllegalArgumentException("Birthdate is invalid " + birthdate);
-        }
     }
 
     /**

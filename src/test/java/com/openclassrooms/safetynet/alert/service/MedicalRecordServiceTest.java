@@ -178,7 +178,7 @@ class MedicalRecordServiceTest {
         int expected = 25;
         LocalDate birthdate = LocalDate.now().minusYears(expected);
 
-        Integer age = medicalRecordService.calculateAgeFromBirthdate(birthdate);
+        Integer age = MedicalRecordService.calculateAgeFromBirthdate(birthdate);
 
         assertNotNull(age);
         assertEquals(expected, age);
@@ -190,7 +190,7 @@ class MedicalRecordServiceTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> medicalRecordService.calculateAgeFromBirthdate(futureBirthdate));
+                () -> MedicalRecordService.calculateAgeFromBirthdate(futureBirthdate));
     }
 
     @Test
