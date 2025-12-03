@@ -5,6 +5,8 @@ import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.service.MedicalRecordService;
 import com.openclassrooms.safetynet.alert.service.PopulationService;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,10 +34,13 @@ public class PopulationController {
      * @return a list of persons with medical infos
      */
     @RequestMapping("/personInfolastName")
-    public List<PersonWithMedicalInfosDTO> getPersonListByLastName(@RequestParam String lastName) {
-        return populationService.getPersonListByLastName(lastName).stream()
-                .map(medicalRecordService::mapToPersonWithMedicalInfosDTO)
-                .toList();
+    public ResponseEntity<List<PersonWithMedicalInfosDTO>> getPersonListByLastName(
+            @RequestParam String lastName) {
+        List<PersonWithMedicalInfosDTO> result =
+                populationService.getPersonListByLastName(lastName).stream()
+                        .map(medicalRecordService::mapToPersonWithMedicalInfosDTO)
+                        .toList();
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     /**
@@ -45,10 +50,12 @@ public class PopulationController {
      * @return a list of email addresses
      */
     @RequestMapping("/communityEmail")
-    public List<String> getAllEmailFromCity(@RequestParam String city) {
-        return populationService.getPersonListByCity(city).stream()
-                .map(Person::getEmail)
-                .distinct()
-                .toList();
+    public ResponseEntity<List<String>> getAllEmailFromCity(@RequestParam String city) {
+        List<String> result =
+                populationService.getPersonListByCity(city).stream()
+                        .map(Person::getEmail)
+                        .distinct()
+                        .toList();
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 }

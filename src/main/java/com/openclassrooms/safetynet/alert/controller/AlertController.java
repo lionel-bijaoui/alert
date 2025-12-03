@@ -10,6 +10,8 @@ import com.openclassrooms.safetynet.alert.service.FireStationService;
 import com.openclassrooms.safetynet.alert.service.MedicalRecordService;
 import com.openclassrooms.safetynet.alert.service.PopulationService;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,14 +49,17 @@ public class AlertController {
      * @return a list of phone numbers of residents served by the fire station
      */
     @RequestMapping("/phoneAlert")
-    public List<String> getPhoneNumberListByFireStationNumber(@RequestParam int firestation) {
-        return populationService
-                .getPersonListByAddressList(
-                        fireStationService.getFireStationAddressListByFireStationNumber(
-                                firestation))
-                .stream()
-                .map(Person::getPhone)
-                .toList();
+    public ResponseEntity<List<String>> getPhoneNumberListByFireStationNumber(
+            @RequestParam int firestation) {
+        List<String> result =
+                populationService
+                        .getPersonListByAddressList(
+                                fireStationService.getFireStationAddressListByFireStationNumber(
+                                        firestation))
+                        .stream()
+                        .map(Person::getPhone)
+                        .toList();
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     /**
@@ -66,7 +71,8 @@ public class AlertController {
      * @return a ChildrenAndAdultsDTO
      */
     @RequestMapping("/childAlert")
-    public ChildrenAndAdultsDTO getChildrenListByAddress(@RequestParam String address) {
+    public ResponseEntity<ChildrenAndAdultsDTO> getChildrenListByAddress(
+            @RequestParam String address) {
         List<Person> personsAtAddress = populationService.getPersonListByAddress(address);
 
         // Partition into children and adults
@@ -87,6 +93,7 @@ public class AlertController {
         List<PersonDTO> adults =
                 partitioned.get(false).stream().map(p -> personMapper.toDto(p.person())).toList();
 
-        return new ChildrenAndAdultsDTO(children, adults);
+        ChildrenAndAdultsDTO result = new ChildrenAndAdultsDTO(children, adults);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 }
