@@ -115,28 +115,29 @@ public class MedicalRecordService {
     }
 
     public PersonWithMedicalInfosDTO mapToPersonWithMedicalInfosDTO(Person person) {
-        return getMedicalRecordByFullName(person.getFirstName(), person.getLastName())
-                .map(
-                        medicalRecord ->
-                                new PersonWithMedicalInfosDTO(
-                                        person.getFirstName(),
-                                        person.getLastName(),
-                                        person.getAddress(),
-                                        person.getPhone(),
-                                        person.getEmail(),
-                                        calculateAgeFromBirthdate(medicalRecord.getBirthdate()),
-                                        medicalRecord.getMedications(),
-                                        medicalRecord.getAllergies()))
-                .orElseGet(
-                        () ->
-                                new PersonWithMedicalInfosDTO(
-                                        person.getFirstName(),
-                                        person.getLastName(),
-                                        person.getAddress(),
-                                        person.getPhone(),
-                                        person.getEmail(),
-                                        null,
-                                        List.of(),
-                                        List.of()));
+        Optional<MedicalRecord> optionalMedicalRecord =
+                getMedicalRecordByFullName(person.getFirstName(), person.getLastName());
+
+        Integer age =
+                optionalMedicalRecord
+                        .map(MedicalRecord::getBirthdate)
+                        .map(MedicalRecordService::calculateAgeFromBirthdate)
+                        .orElse(null);
+
+        List<String> medications =
+                optionalMedicalRecord.map(MedicalRecord::getMedications).orElse(List.of());
+
+        List<String> allergies =
+                optionalMedicalRecord.map(MedicalRecord::getAllergies).orElse(List.of());
+
+        return new PersonWithMedicalInfosDTO(
+                person.getFirstName(),
+                person.getLastName(),
+                person.getAddress(),
+                person.getPhone(),
+                person.getEmail(),
+                age,
+                medications,
+                allergies);
     }
 }
