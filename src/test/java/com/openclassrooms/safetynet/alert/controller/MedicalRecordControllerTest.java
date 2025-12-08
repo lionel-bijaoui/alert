@@ -144,7 +144,7 @@ class MedicalRecordControllerTest {
                         delete("/medicalRecord")
                                 .param("firstName", dto.firstName())
                                 .param("lastName", dto.lastName()))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Test

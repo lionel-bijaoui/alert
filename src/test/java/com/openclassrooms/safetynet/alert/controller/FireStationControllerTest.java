@@ -7,7 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openclassrooms.safetynet.alert.dto.FireStationDTO;
-import com.openclassrooms.safetynet.alert.dto.PersonWithAge;
+import com.openclassrooms.safetynet.alert.dto.PersonSummaryDTO;
+import com.openclassrooms.safetynet.alert.dto.PopulationByFireStationDTO;
 import com.openclassrooms.safetynet.alert.exception.ConflictException;
 import com.openclassrooms.safetynet.alert.exception.ResourceNotFoundException;
 import com.openclassrooms.safetynet.alert.mapper.FireStationMapper;
@@ -133,7 +134,7 @@ class FireStationControllerTest {
         doNothing().when(fireStationService).deleteFireStation(dto.address());
 
         mockMvc.perform(delete("/firestation").param("address", dto.address()))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Test

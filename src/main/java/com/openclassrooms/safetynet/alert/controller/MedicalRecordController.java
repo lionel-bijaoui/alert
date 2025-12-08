@@ -36,8 +36,9 @@ public class MedicalRecordController {
             @Valid @RequestBody MedicalRecordDTO dto) {
         MedicalRecord entity = medicalRecordMapper.toEntity(dto);
         entity = medicalRecordService.addMedicalRecord(entity);
-        MedicalRecordDTO result = medicalRecordMapper.toDto(entity);
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        MedicalRecordDTO body = medicalRecordMapper.toDto(entity);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 
     /**
@@ -51,8 +52,9 @@ public class MedicalRecordController {
             @Valid @RequestBody MedicalRecordDTO dto) {
         MedicalRecord entity = medicalRecordMapper.toEntity(dto);
         entity = medicalRecordService.updateMedicalRecord(entity);
-        MedicalRecordDTO result = medicalRecordMapper.toDto(entity);
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        MedicalRecordDTO body = medicalRecordMapper.toDto(entity);
+
+        return ResponseEntity.status(HttpStatus.OK).body(body);
     }
 
     /**
@@ -62,7 +64,10 @@ public class MedicalRecordController {
      * @param lastName last name of the person
      */
     @DeleteMapping
-    public void deleteMedicalRecord(@RequestParam String firstName, @RequestParam String lastName) {
+    public ResponseEntity<Void> deleteMedicalRecord(
+            @RequestParam String firstName, @RequestParam String lastName) {
         medicalRecordService.deleteMedicalRecord(firstName, lastName);
+
+        return ResponseEntity.noContent().build();
     }
 }

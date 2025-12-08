@@ -34,8 +34,9 @@ public class PersonController {
     public ResponseEntity<PersonDTO> addPerson(@Valid @RequestBody PersonDTO dto) {
         Person entity = personMapper.toEntity(dto);
         entity = personService.addPerson(entity);
-        PersonDTO result = personMapper.toDto(entity);
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        PersonDTO body = personMapper.toDto(entity);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 
     /**
@@ -48,8 +49,9 @@ public class PersonController {
     public ResponseEntity<PersonDTO> updatePerson(@Valid @RequestBody PersonDTO dto) {
         Person entity = personMapper.toEntity(dto);
         entity = personService.updatePerson(entity);
-        PersonDTO result = personMapper.toDto(entity);
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        PersonDTO body = personMapper.toDto(entity);
+
+        return ResponseEntity.status(HttpStatus.OK).body(body);
     }
 
     /**
@@ -59,7 +61,10 @@ public class PersonController {
      * @param lastName the last name of the person to delete
      */
     @DeleteMapping
-    public void deletePerson(@RequestParam String firstName, @RequestParam String lastName) {
+    public ResponseEntity<Void> deletePerson(
+            @RequestParam String firstName, @RequestParam String lastName) {
         personService.deletePerson(firstName, lastName);
+
+        return ResponseEntity.noContent().build();
     }
 }

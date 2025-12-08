@@ -71,6 +71,6 @@ public class PersonControllerIT extends IntegrationTestBase {
         String last = "Doe";
 
         mockMvc.perform(delete("/person").param("firstName", first).param("lastName", last))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 }

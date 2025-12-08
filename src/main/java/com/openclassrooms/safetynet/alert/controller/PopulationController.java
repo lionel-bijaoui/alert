@@ -1,8 +1,6 @@
 package com.openclassrooms.safetynet.alert.controller;
 
 import com.openclassrooms.safetynet.alert.dto.PersonWithMedicalInfosDTO;
-import com.openclassrooms.safetynet.alert.model.Person;
-import com.openclassrooms.safetynet.alert.service.MedicalRecordService;
 import com.openclassrooms.safetynet.alert.service.PopulationService;
 
 import org.springframework.http.HttpStatus;
@@ -18,12 +16,9 @@ import java.util.List;
 public class PopulationController {
 
     private final PopulationService populationService;
-    private final MedicalRecordService medicalRecordService;
 
-    public PopulationController(
-            PopulationService populationService, MedicalRecordService medicalRecordService) {
+    public PopulationController(PopulationService populationService) {
         this.populationService = populationService;
-        this.medicalRecordService = medicalRecordService;
     }
 
     /**
@@ -36,11 +31,9 @@ public class PopulationController {
     @RequestMapping("/personInfolastName")
     public ResponseEntity<List<PersonWithMedicalInfosDTO>> getPersonListByLastName(
             @RequestParam String lastName) {
-        List<PersonWithMedicalInfosDTO> result =
-                populationService.getPersonListByLastName(lastName).stream()
-                        .map(medicalRecordService::mapToPersonWithMedicalInfosDTO)
-                        .toList();
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        List<PersonWithMedicalInfosDTO> body = populationService.getPersonListByLastName(lastName);
+
+        return ResponseEntity.status(HttpStatus.OK).body(body);
     }
 
     /**

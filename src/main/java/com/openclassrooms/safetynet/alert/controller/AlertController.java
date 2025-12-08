@@ -31,9 +31,10 @@ public class AlertController {
     @RequestMapping("/phoneAlert")
     public ResponseEntity<List<String>> getPhoneNumberListByFireStationNumber(
             @RequestParam int firestation) {
-        List<String> result =
+        List<String> body =
                 contactInformationService.getPhoneNumberListByFireStationNumber(firestation);
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+
+        return ResponseEntity.status(HttpStatus.OK).body(body);
     }
 
     /**
@@ -47,7 +48,8 @@ public class AlertController {
     @RequestMapping("/childAlert")
     public ResponseEntity<ChildrenAndAdultsDTO> getChildrenListByAddress(
             @RequestParam String address) {
-        ChildrenAndAdultsDTO result = contactInformationService.getChildrenListByAddress(address);
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        ChildrenAndAdultsDTO body = contactInformationService.getChildrenListByAddress(address);
+
+        return ResponseEntity.status(HttpStatus.OK).body(body);
     }
 }

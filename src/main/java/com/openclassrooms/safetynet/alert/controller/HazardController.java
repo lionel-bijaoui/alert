@@ -19,8 +19,7 @@ public class HazardController {
 
     private final PopulationService populationService;
 
-    public HazardController(
-            PopulationService populationService) {
+    public HazardController(PopulationService populationService) {
         this.populationService = populationService;
     }
 
@@ -36,10 +35,10 @@ public class HazardController {
     public ResponseEntity<Map<String, List<PersonWithMedicalInfosDTO>>>
             getHouseholdsByFireStationNumberList(
                     @RequestParam(name = "stations") List<Integer> fireStationNumberList) {
-        Map<String, List<PersonWithMedicalInfosDTO>> result =
+        Map<String, List<PersonWithMedicalInfosDTO>> body =
                 populationService.getHouseholdsByFireStationNumberList(fireStationNumberList);
 
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(body);
     }
 
     /**
@@ -53,9 +52,9 @@ public class HazardController {
     @RequestMapping("/fire")
     public ResponseEntity<PopulationByFireStationsDTO> getPersonAndFireStationListByAddress(
             @RequestParam String address) {
-        PopulationByFireStationsDTO result =
+        PopulationByFireStationsDTO body =
                 populationService.getPersonAndFireStationListByAddress(address);
 
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(body);
     }
 }

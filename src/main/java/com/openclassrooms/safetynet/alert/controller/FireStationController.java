@@ -41,8 +41,9 @@ public class FireStationController {
     public ResponseEntity<FireStationDTO> addFireStation(@Valid @RequestBody FireStationDTO dto) {
         FireStation entity = fireStationMapper.toEntity(dto);
         entity = fireStationService.addFireStation(entity);
-        FireStationDTO result = fireStationMapper.toDto(entity);
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        FireStationDTO body = fireStationMapper.toDto(entity);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 
     /**
@@ -56,18 +57,22 @@ public class FireStationController {
             @Valid @RequestBody FireStationDTO dto) {
         FireStation entity = fireStationMapper.toEntity(dto);
         entity = fireStationService.updateFireStation(entity);
-        FireStationDTO result = fireStationMapper.toDto(entity);
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        FireStationDTO body = fireStationMapper.toDto(entity);
+
+        return ResponseEntity.status(HttpStatus.OK).body(body);
     }
 
     /**
      * Delete the mapping for a fire station or address
      *
      * @param address the address of the fire station to delete
+     * @return a ResponseEntity with no content
      */
     @DeleteMapping
-    public void deleteFireStation(@RequestParam String address) {
+    public ResponseEntity<Void> deleteFireStation(@RequestParam String address) {
         fireStationService.deleteFireStation(address);
+
+        return ResponseEntity.noContent().build();
     }
 
     /**

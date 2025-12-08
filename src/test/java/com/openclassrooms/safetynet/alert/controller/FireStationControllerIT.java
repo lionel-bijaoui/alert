@@ -59,7 +59,7 @@ public class FireStationControllerIT extends IntegrationTestBase {
         String address = "1509 Culver St";
 
         mockMvc.perform(delete("/firestation").param("address", address))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Test

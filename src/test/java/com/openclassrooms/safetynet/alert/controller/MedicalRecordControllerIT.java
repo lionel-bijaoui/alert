@@ -78,6 +78,6 @@ public class MedicalRecordControllerIT extends IntegrationTestBase {
                         delete("/medicalRecord")
                                 .param("firstName", FIRST_NAME)
                                 .param("lastName", LAST_NAME))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 }
