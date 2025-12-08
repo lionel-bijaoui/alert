@@ -82,6 +82,26 @@ class PersonControllerTest {
     }
 
     @Test
+    void addPerson_shouldReturnBadRequest_whenValidationFails() throws Exception {
+        PersonDTO invalidDto =
+                new PersonDTO(
+                        "",
+                        dto.lastName(),
+                        dto.address(),
+                        dto.city(),
+                        dto.zip(),
+                        dto.phone(),
+                        dto.email());
+
+        mockMvc.perform(
+                        post("/person")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(invalidDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Validation Failed"));
+    }
+
+    @Test
     void updatePerson_shouldReturnUpdatedPerson_whenPersonIsUpdated() throws Exception {
         Person updatedEntity = new PersonTestBuilder().withAddress("New Address").build();
         PersonDTO updatedDto =
@@ -157,5 +177,11 @@ class PersonControllerTest {
                 .andExpect(status().isNotFound());
 
         verify(personService, times(1)).deletePerson(firstName, lastName);
+    }
+
+    @Test
+    void deletePerson_shouldReturnBadRequest_whenFirstNameParamIsMissing() throws Exception {
+        mockMvc.perform(delete("/person").param("lastName", dto.lastName()))
+                .andExpect(status().isBadRequest());
     }
 }

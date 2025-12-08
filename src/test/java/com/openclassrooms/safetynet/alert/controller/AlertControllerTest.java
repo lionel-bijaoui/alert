@@ -80,6 +80,21 @@ public class AlertControllerTest {
     }
 
     @Test
+    void
+            getPhoneNumberListByFireStationNumber_shouldReturnBadRequest_whenFireStationParamIsMissing()
+                    throws Exception {
+        mockMvc.perform(get("/phoneAlert")).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void
+            getPhoneNumberListByFireStationNumber_shouldReturnBadRequest_whenFireStationParamIsInvalid()
+                    throws Exception {
+        mockMvc.perform(get("/phoneAlert").param("firestation", "invalid"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void getChildrenListByAddress_shouldReturnChildrenList_whenChildrenExist() throws Exception {
         ChildDTO childDTO = new ChildDTO("Jojo", "Doe", 1);
 
@@ -133,5 +148,11 @@ public class AlertControllerTest {
                 .andExpect(jsonPath("$.children").isEmpty())
                 .andExpect(jsonPath("$.adults").isArray())
                 .andExpect(jsonPath("$.adults").isNotEmpty());
+    }
+
+    @Test
+    void getChildrenListByAddress_shouldReturnBadRequest_whenAddressParamIsMissing()
+            throws Exception {
+        mockMvc.perform(get("/childAlert")).andExpect(status().isBadRequest());
     }
 }

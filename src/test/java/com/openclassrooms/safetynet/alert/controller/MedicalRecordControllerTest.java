@@ -1,7 +1,9 @@
 package com.openclassrooms.safetynet.alert.controller;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -75,6 +77,58 @@ class MedicalRecordControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void addMedicalRecord_shouldReturnBadRequest_whenValidationFails() throws Exception {
+        MedicalRecordDTO invalidDto =
+                new MedicalRecordDTO(
+                        "", dto.lastName(), dto.birthdate(), dto.medications(), dto.allergies());
+
+        mockMvc.perform(
+                        post("/medicalRecord")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(invalidDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Validation Failed"));
+    }
+
+    @Test
+    void addMedicalRecord_shouldReturnBadRequest_whenBirthdateIsInFuture() throws Exception {
+        MedicalRecordDTO invalidDto =
+                new MedicalRecordDTO(
+                        dto.firstName(),
+                        dto.lastName(),
+                        java.time.LocalDate.now().plusDays(1),
+                        dto.medications(),
+                        dto.allergies());
+
+        mockMvc.perform(
+                        post("/medicalRecord")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(invalidDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Validation Failed"))
+                .andExpect(jsonPath("$.errors[0]").value(containsString("future")));
+    }
+
+    @Test
+    void addMedicalRecord_shouldReturnBadRequest_whenMedicationFormatIsInvalid() throws Exception {
+        MedicalRecordDTO invalidDto =
+                new MedicalRecordDTO(
+                        dto.firstName(),
+                        dto.lastName(),
+                        dto.birthdate(),
+                        java.util.List.of("invalid-medication-format"),
+                        dto.allergies());
+
+        mockMvc.perform(
+                        post("/medicalRecord")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(invalidDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Validation Failed"))
+                .andExpect(jsonPath("$.errors[0]").value(containsString("Medication")));
     }
 
     @Test
@@ -158,5 +212,11 @@ class MedicalRecordControllerTest {
                                 .param("firstName", "Unknown")
                                 .param("lastName", "Person"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteMedicalRecord_shouldReturnBadRequest_whenFirstNameParamIsMissing() throws Exception {
+        mockMvc.perform(delete("/medicalRecord").param("lastName", dto.lastName()))
+                .andExpect(status().isBadRequest());
     }
 }

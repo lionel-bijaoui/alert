@@ -188,4 +188,10 @@ public class PopulationControllerTest {
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$").isEmpty());
     }
+
+    @Test
+    void getAllEmailFromCity_shouldReturnBadRequest_whenCityParamIsMissing() throws Exception {
+        mockMvc.perform(get("/communityEmail").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
 }

@@ -89,6 +89,18 @@ class FireStationControllerTest {
     }
 
     @Test
+    void addFireStation_shouldReturnBadRequest_whenValidationFails() throws Exception {
+        FireStationDTO invalidDto = new FireStationDTO("", dto.station());
+
+        mockMvc.perform(
+                        post("/firestation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(invalidDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Validation Failed"));
+    }
+
+    @Test
     void updateFireStation_shouldReturnUpdatedFireStation_whenFireStationIsUpdated()
             throws Exception {
         FireStationDTO updatedDto = new FireStationDTO(dto.address(), 4);
@@ -149,6 +161,11 @@ class FireStationControllerTest {
     }
 
     @Test
+    void deleteFireStation_shouldReturnBadRequest_whenAddressParamIsMissing() throws Exception {
+        mockMvc.perform(delete("/firestation")).andExpect(status().isBadRequest());
+    }
+
+    @Test
     void getPersonListByStationNumber_shouldReturnPopulationByFireStationDto_whenFireStationExists()
             throws Exception {
         Person adult = new PersonTestBuilder().build();
@@ -180,5 +197,26 @@ class FireStationControllerTest {
                 .andExpect(jsonPath("$.adultCount").value(1))
                 .andExpect(jsonPath("$.childCount").isNumber())
                 .andExpect(jsonPath("$.childCount").value(1));
+    }
+
+    @Test
+    void getPersonListByStationNumber_shouldReturnBadRequest_whenStationNumberParamIsMissing()
+            throws Exception {
+        mockMvc.perform(get("/firestation")).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getPersonListByStationNumber_shouldReturnEmptyList_whenStationNumberNotFound()
+            throws Exception {
+        PopulationByFireStationDTO emptyDto = new PopulationByFireStationDTO(List.of(), 0, 0);
+
+        when(populationService.getPersonListByStationNumber(99)).thenReturn(emptyDto);
+
+        mockMvc.perform(get("/firestation").param("stationNumber", "99"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.population").isArray())
+                .andExpect(jsonPath("$.population").isEmpty())
+                .andExpect(jsonPath("$.adultCount").value(0))
+                .andExpect(jsonPath("$.childCount").value(0));
     }
 }

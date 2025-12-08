@@ -156,4 +156,10 @@ public class HazardControllerTest {
                 .andExpect(jsonPath("$.fireStationNumbers").isEmpty())
                 .andExpect(jsonPath("$.population").isEmpty());
     }
+
+    @Test
+    void getPersonAndFireStationListByAddress_shouldReturnBadRequest_whenAddressParamIsMissing()
+            throws Exception {
+        mockMvc.perform(get("/fire")).andExpect(status().isBadRequest());
+    }
 }
