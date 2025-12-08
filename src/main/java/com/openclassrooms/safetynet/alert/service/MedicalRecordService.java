@@ -29,12 +29,15 @@ public class MedicalRecordService {
 
     public static Integer calculateAgeFromBirthdate(LocalDate birthdate) {
         LocalDate currentDate = LocalDate.now();
-        if ((birthdate != null)
-                && (birthdate.isBefore(currentDate) || birthdate.isEqual(currentDate))) {
-            return Period.between(birthdate, currentDate).getYears();
-        } else {
+        boolean isBirthdateValid =
+                (birthdate != null)
+                        && (birthdate.isBefore(currentDate) || birthdate.isEqual(currentDate));
+
+        if (!isBirthdateValid) {
             throw new IllegalArgumentException("Birthdate is invalid " + birthdate);
         }
+
+        return Period.between(birthdate, currentDate).getYears();
     }
 
     // CRUD operations for MedicalRecord
@@ -44,6 +47,7 @@ public class MedicalRecordService {
         Optional<MedicalRecord> maybeMedicalRecord =
                 medicalRecordRepository.findByFirstNameAndLastName(
                         medicalRecord.getFirstName(), medicalRecord.getLastName());
+
         if (maybeMedicalRecord.isPresent()) {
             throw new ConflictException(
                     "Medical record already exists for: "
@@ -51,6 +55,7 @@ public class MedicalRecordService {
                             + " "
                             + medicalRecord.getLastName());
         }
+
         return medicalRecordRepository.save(medicalRecord);
     }
 
@@ -59,15 +64,16 @@ public class MedicalRecordService {
         Optional<MedicalRecord> maybeMedicalRecord =
                 medicalRecordRepository.findByFirstNameAndLastName(
                         medicalRecord.getFirstName(), medicalRecord.getLastName());
-        if (maybeMedicalRecord.isPresent()) {
-            MedicalRecord existingMedicalRecord = maybeMedicalRecord.get();
-            existingMedicalRecord.setBirthdate(medicalRecord.getBirthdate());
-            existingMedicalRecord.setMedications(medicalRecord.getMedications());
-            existingMedicalRecord.setAllergies(medicalRecord.getAllergies());
-            return medicalRecordRepository.save(existingMedicalRecord);
-        } else {
+
+        if (maybeMedicalRecord.isEmpty()) {
             throw new ResourceNotFoundException("Medical record does not exist");
         }
+
+        MedicalRecord existingMedicalRecord = maybeMedicalRecord.get();
+        existingMedicalRecord.setBirthdate(medicalRecord.getBirthdate());
+        existingMedicalRecord.setMedications(medicalRecord.getMedications());
+        existingMedicalRecord.setAllergies(medicalRecord.getAllergies());
+        return medicalRecordRepository.save(existingMedicalRecord);
     }
 
     public void deleteMedicalRecord(String firstName, String lastName) {

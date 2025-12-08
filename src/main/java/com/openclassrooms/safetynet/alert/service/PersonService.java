@@ -28,10 +28,12 @@ public class PersonService {
         Optional<Person> maybePerson =
                 jsonPersonRepository.findByFirstNameAndLastName(
                         person.getFirstName(), person.getLastName());
+
         if (maybePerson.isPresent()) {
             throw new ConflictException(
                     "Person already exists: " + person.getFirstName() + " " + person.getLastName());
         }
+
         return jsonPersonRepository.save(person);
     }
 
@@ -40,27 +42,31 @@ public class PersonService {
         Optional<Person> maybePerson =
                 jsonPersonRepository.findByFirstNameAndLastName(
                         person.getFirstName(), person.getLastName());
-        if (maybePerson.isPresent()) {
-            Person existing = maybePerson.get();
-            existing.setAddress(person.getAddress());
-            existing.setCity(person.getCity());
-            existing.setZip(person.getZip());
-            existing.setPhone(person.getPhone());
-            existing.setEmail(person.getEmail());
-            return jsonPersonRepository.save(existing);
-        } else {
+
+        if (maybePerson.isEmpty()) {
             throw new ResourceNotFoundException(
                     "Person does not exist: " + person.getFirstName() + " " + person.getLastName());
         }
+
+        Person existing = maybePerson.get();
+        existing.setAddress(person.getAddress());
+        existing.setCity(person.getCity());
+        existing.setZip(person.getZip());
+        existing.setPhone(person.getPhone());
+        existing.setEmail(person.getEmail());
+
+        return jsonPersonRepository.save(existing);
     }
 
     public void deletePerson(String firstName, String lastName) {
         Optional<Person> maybePerson =
                 jsonPersonRepository.findByFirstNameAndLastName(firstName, lastName);
+
         if (maybePerson.isEmpty()) {
             throw new ResourceNotFoundException(
                     "No existing person to delete: " + firstName + " " + lastName);
         }
+
         jsonPersonRepository.deleteByFirstNameAndLastName(firstName, lastName);
     }
 }

@@ -31,10 +31,12 @@ public class FireStationService {
     public FireStation addFireStation(FireStation fireStation) {
         Optional<FireStation> maybeFireStation =
                 jsonFireStationRepository.findByAddress(fireStation.getAddress());
+
         if (maybeFireStation.isPresent()) {
             throw new ConflictException(
                     "Fire station already exists for address: " + fireStation.getAddress());
         }
+
         return jsonFireStationRepository.save(fireStation);
     }
 
@@ -42,23 +44,30 @@ public class FireStationService {
     public FireStation updateFireStation(FireStation fireStation) {
         Optional<FireStation> maybeFireStation =
                 jsonFireStationRepository.findByAddress(fireStation.getAddress());
-        if (maybeFireStation.isPresent()) {
-            FireStation existingFireStation = maybeFireStation.get();
-            existingFireStation.setStation(fireStation.getStation());
-            return jsonFireStationRepository.save(existingFireStation);
-        } else {
-            throw new ResourceNotFoundException("Fire station does not exist");
+
+        if (maybeFireStation.isEmpty()) {
+            throw new ResourceNotFoundException(
+                    "Fire station does not exist for address: " + fireStation.getAddress());
         }
+
+        FireStation existingFireStation = maybeFireStation.get();
+        existingFireStation.setStation(fireStation.getStation());
+
+        return jsonFireStationRepository.save(existingFireStation);
     }
 
     public void deleteFireStation(String address) {
         Optional<FireStation> maybeFireStation = jsonFireStationRepository.findByAddress(address);
+
         if (maybeFireStation.isEmpty()) {
             throw new ResourceNotFoundException(
                     "No existing fire station to delete at address: " + address);
         }
+
         jsonFireStationRepository.deleteByAddress(address);
     }
+
+    // Additional methods
 
     public List<String> getFireStationAddressListByFireStationNumber(Integer stationNumber) {
         return jsonFireStationRepository.findByStationNumber(stationNumber).stream()
