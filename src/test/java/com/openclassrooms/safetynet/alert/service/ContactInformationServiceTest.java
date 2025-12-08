@@ -6,7 +6,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 
+import com.openclassrooms.safetynet.alert.dto.PersonDTO;
 import com.openclassrooms.safetynet.alert.dto.PersonWithAge;
+import com.openclassrooms.safetynet.alert.mapper.PersonMapper;
 import com.openclassrooms.safetynet.alert.model.FireStation;
 import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.utils.FireStationTestBuilder;
@@ -33,6 +35,8 @@ public class ContactInformationServiceTest {
     @Mock PopulationService populationService;
 
     @Mock MedicalRecordService medicalRecordService;
+
+    @Mock PersonMapper personMapper;
 
     @InjectMocks ContactInformationService contactInformationService;
 
@@ -91,6 +95,16 @@ public class ContactInformationServiceTest {
         when(populationService.getPersonListByAddress(person.getAddress())).thenReturn(personList);
         when(medicalRecordService.enrichPersonsWithAge(any()))
                 .thenReturn(List.of(new PersonWithAge(person, 99), new PersonWithAge(child, 1)));
+        when(personMapper.toDto(person))
+                .thenReturn(
+                        new PersonDTO(
+                                person.getFirstName(),
+                                person.getLastName(),
+                                person.getAddress(),
+                                person.getCity(),
+                                person.getZip(),
+                                person.getPhone(),
+                                person.getEmail()));
 
         var result = contactInformationService.getChildrenListByAddress(person.getAddress());
 
