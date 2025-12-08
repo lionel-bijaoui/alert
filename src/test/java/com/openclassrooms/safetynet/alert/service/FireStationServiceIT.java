@@ -116,4 +116,28 @@ class FireStationServiceIT extends IntegrationTestBase {
                                                 && fs.getStation().equals(existing.getStation())),
                 "Fire stations list should contain the existing fire station");
     }
+
+    @Test
+    void getAddressListFromFireStationNumberList_shouldReturnAddresses_whenExisting() {
+        FireStation existing = new FireStationTestBuilder().build();
+        var stationNumbers = List.of(existing.getStation(), 99);
+
+        var addresses = fireStationService.getAddressListFromFireStationNumberList(stationNumbers);
+
+        assertNotNull(addresses);
+        assertFalse(addresses.isEmpty(), "Addresses list should not be empty");
+        assertTrue(
+                addresses.contains(existing.getAddress()),
+                "Addresses list should contain the existing fire station address");
+    }
+
+    @Test
+    void getAddressListFromFireStationNumberList_shouldReturnEmptyList_whenNoneExists() {
+        var stationNumbers = List.of(100, 101);
+
+        var addresses = fireStationService.getAddressListFromFireStationNumberList(stationNumbers);
+
+        assertNotNull(addresses);
+        assertTrue(addresses.isEmpty(), "Addresses list should be empty when no matches found");
+    }
 }

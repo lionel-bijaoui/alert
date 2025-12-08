@@ -79,4 +79,12 @@ public class FireStationService {
                 .filter(fs -> stationNumberList.contains(fs.getStation()))
                 .toList();
     }
+
+    public List<String> getAddressListFromFireStationNumberList(
+            List<Integer> fireStationNumberList) {
+        return getFireStationListByFireStationNumberList(fireStationNumberList).stream()
+                .map(FireStation::getAddress)
+                .distinct()
+                .toList();
+    }
 }

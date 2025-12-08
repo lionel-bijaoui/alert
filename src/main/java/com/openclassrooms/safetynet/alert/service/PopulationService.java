@@ -5,7 +5,6 @@ import com.openclassrooms.safetynet.alert.dto.PersonWithMedicalInfosDTO;
 import com.openclassrooms.safetynet.alert.dto.PopulationByFireStationDTO;
 import com.openclassrooms.safetynet.alert.dto.PopulationByFireStationsDTO;
 import com.openclassrooms.safetynet.alert.mapper.PersonMapper;
-import com.openclassrooms.safetynet.alert.model.FireStation;
 import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.repository.JsonPersonRepository;
 
@@ -65,12 +64,8 @@ public class PopulationService {
     public Map<String, List<PersonWithMedicalInfosDTO>> getHouseholdsByFireStationNumberList(
             List<Integer> fireStationNumberList) {
         List<String> addressList =
-                fireStationService
-                        .getFireStationListByFireStationNumberList(fireStationNumberList)
-                        .stream()
-                        .map(FireStation::getAddress)
-                        .distinct()
-                        .toList();
+                fireStationService.getAddressListFromFireStationNumberList(fireStationNumberList);
+
         return getPersonListByAddressList(addressList).stream()
                 .map(medicalRecordService::mapToPersonWithMedicalInfosDTO)
                 .collect(Collectors.groupingBy(PersonWithMedicalInfosDTO::address));

@@ -212,8 +212,8 @@ public class PopulationServiceTest {
         MedicalRecord medicalRecord = new MedicalRecordTestBuilder().build();
         Integer personAge = 30;
 
-        when(fireStationService.getFireStationListByFireStationNumberList(anyList()))
-                .thenReturn(List.of(fireStation));
+        when(fireStationService.getAddressListFromFireStationNumberList(anyList()))
+                .thenReturn(List.of(fireStation.getAddress()));
         when(jsonPersonRepository.findAll()).thenReturn(List.of(personA));
         when(medicalRecordService.mapToPersonWithMedicalInfosDTO(personA))
                 .thenReturn(
@@ -247,7 +247,7 @@ public class PopulationServiceTest {
     @Test
     void
             getHouseholdsByFireStationNumberList_shouldReturnEmptyList_whenFireStationNumberListDoesNotExist() {
-        when(fireStationService.getFireStationListByFireStationNumberList(anyList()))
+        when(fireStationService.getAddressListFromFireStationNumberList(anyList()))
                 .thenReturn(List.of());
 
         Map<String, List<PersonWithMedicalInfosDTO>> result =
