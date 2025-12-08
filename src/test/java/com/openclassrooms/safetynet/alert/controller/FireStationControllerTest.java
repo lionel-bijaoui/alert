@@ -150,20 +150,28 @@ class FireStationControllerTest {
     @Test
     void getPersonListByStationNumber_shouldReturnPopulationByFireStationDto_whenFireStationExists()
             throws Exception {
-        Integer stationNumber = 2;
-
         Person adult = new PersonTestBuilder().build();
         Person child =
                 new PersonTestBuilder().withFirstName("Lola").withAddress("29 15th St").build();
+        PopulationByFireStationDTO dto =
+                new PopulationByFireStationDTO(
+                        List.of(
+                                new PersonSummaryDTO(
+                                        adult.getFirstName(),
+                                        adult.getLastName(),
+                                        adult.getAddress(),
+                                        adult.getPhone()),
+                                new PersonSummaryDTO(
+                                        child.getFirstName(),
+                                        child.getLastName(),
+                                        child.getAddress(),
+                                        child.getPhone())),
+                        1,
+                        1);
 
-        when(fireStationService.getFireStationAddressListByFireStationNumber(anyInt()))
-                .thenReturn(List.of(adult.getAddress(), child.getAddress()));
-        when(populationService.getPersonListByAddressList(anyList()))
-                .thenReturn(List.of(adult, child));
-        when(medicalRecordService.enrichPersonsWithAge(any()))
-                .thenReturn(List.of(new PersonWithAge(adult, 99), new PersonWithAge(child, 1)));
+        when(populationService.getPersonListByStationNumber(anyInt())).thenReturn(dto);
 
-        mockMvc.perform(get("/firestation").param("stationNumber", String.valueOf(stationNumber)))
+        mockMvc.perform(get("/firestation").param("stationNumber", "2"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.population").isArray())
                 .andExpect(jsonPath("$.population").isNotEmpty())

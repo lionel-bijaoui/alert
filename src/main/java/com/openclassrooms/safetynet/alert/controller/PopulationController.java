@@ -51,11 +51,8 @@ public class PopulationController {
      */
     @RequestMapping("/communityEmail")
     public ResponseEntity<List<String>> getAllEmailFromCity(@RequestParam String city) {
-        List<String> result =
-                populationService.getPersonListByCity(city).stream()
-                        .map(Person::getEmail)
-                        .distinct()
-                        .toList();
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        List<String> body = populationService.getPersonEmailListByCity(city);
+
+        return ResponseEntity.status(HttpStatus.OK).body(body);
     }
 }

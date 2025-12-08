@@ -3,21 +3,17 @@ package com.openclassrooms.safetynet.alert.controller;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.openclassrooms.safetynet.alert.dto.PersonWithAge;
-import com.openclassrooms.safetynet.alert.mapper.PersonMapper;
-import com.openclassrooms.safetynet.alert.model.FireStation;
+import com.openclassrooms.safetynet.alert.dto.ChildDTO;
+import com.openclassrooms.safetynet.alert.dto.ChildrenAndAdultsDTO;
+import com.openclassrooms.safetynet.alert.dto.PersonDTO;
 import com.openclassrooms.safetynet.alert.model.Person;
-import com.openclassrooms.safetynet.alert.service.FireStationService;
-import com.openclassrooms.safetynet.alert.service.MedicalRecordService;
-import com.openclassrooms.safetynet.alert.service.PopulationService;
-import com.openclassrooms.safetynet.alert.utils.FireStationTestBuilder;
+import com.openclassrooms.safetynet.alert.service.ContactInformationService;
 import com.openclassrooms.safetynet.alert.utils.PersonTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
 
@@ -30,7 +26,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @WebMvcTest(AlertController.class)
@@ -39,38 +34,27 @@ public class AlertControllerTest {
 
     @Autowired MockMvc mockMvc;
 
-    @MockitoBean FireStationService fireStationService;
-
-    @MockitoBean PopulationService populationService;
-
-    @MockitoBean MedicalRecordService medicalRecordService;
-
-    @MockitoBean PersonMapper personMapper;
+    @MockitoBean ContactInformationService contactInformationService;
 
     Person person;
-    List<Person> personList;
 
     @BeforeEach
     void setUp() {
         person = new PersonTestBuilder().build();
-        personList = new ArrayList<>(List.of(person));
     }
 
     @Test
     void
             getPhoneNumberListByFireStationNumber_shouldReturnPhoneNumberList_whenFireStationNumberExists()
                     throws Exception {
-        FireStation fireStation = new FireStationTestBuilder().build();
-        List<String> fireStationList = List.of(fireStation.getAddress());
+        Integer fireStationNumber = 3;
 
-        when(fireStationService.getFireStationAddressListByFireStationNumber(
-                        fireStation.getStation()))
-                .thenReturn(fireStationList);
-        when(populationService.getPersonListByAddressList(fireStationList)).thenReturn(personList);
+        when(contactInformationService.getPhoneNumberListByFireStationNumber(anyInt()))
+                .thenReturn(List.of(person.getPhone()));
 
         mockMvc.perform(
                         get("/phoneAlert")
-                                .param("firestation", String.valueOf(fireStation.getStation()))
+                                .param("firestation", String.valueOf(fireStationNumber))
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
@@ -82,10 +66,9 @@ public class AlertControllerTest {
             getPhoneNumberListByFireStationNumber_shouldReturnEmptyList_whenFireStationNumberDoesNotExist()
                     throws Exception {
         Integer fireStationNumber = 99;
-        List<String> fireStationList = List.of();
-        when(fireStationService.getFireStationAddressListByFireStationNumber(fireStationNumber))
-                .thenReturn(fireStationList);
-        when(populationService.getPersonListByAddressList(fireStationList)).thenReturn(List.of());
+
+        when(contactInformationService.getPhoneNumberListByFireStationNumber(fireStationNumber))
+                .thenReturn(List.of());
 
         mockMvc.perform(
                         get("/phoneAlert")
@@ -94,40 +77,61 @@ public class AlertControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$").isEmpty());
-
-        verify(fireStationService, times(1))
-                .getFireStationAddressListByFireStationNumber(fireStationNumber);
-        verify(populationService, times(1)).getPersonListByAddressList(fireStationList);
     }
 
     @Test
     void getChildrenListByAddress_shouldReturnChildrenList_whenChildrenExist() throws Exception {
-        Person child =
-                new PersonTestBuilder()
-                        .withFirstName("Jojo")
-                        .withEmail("jojodoe@email.com")
-                        .build();
+        ChildDTO childDTO = new ChildDTO("Jojo", "Doe", 1);
 
-        personList.add(child);
-        when(populationService.getPersonListByAddress(person.getAddress())).thenReturn(personList);
-        when(medicalRecordService.enrichPersonsWithAge(any()))
-                .thenReturn(List.of(new PersonWithAge(person, 99), new PersonWithAge(child, 1)));
+        PersonDTO adultDTO =
+                new PersonDTO(
+                        person.getFirstName(),
+                        person.getLastName(),
+                        person.getAddress(),
+                        person.getCity(),
+                        person.getZip(),
+                        person.getPhone(),
+                        person.getEmail());
+
+        ChildrenAndAdultsDTO childrenAndAdultsDTO =
+                new ChildrenAndAdultsDTO(List.of(childDTO), List.of(adultDTO));
+
+        when(contactInformationService.getChildrenListByAddress(any()))
+                .thenReturn(childrenAndAdultsDTO);
 
         mockMvc.perform(get("/childAlert").param("address", person.getAddress()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.children", hasSize(1)))
-                .andExpect(jsonPath("$.children[0].firstName").value(child.getFirstName()))
-                .andExpect(jsonPath("$.children[0].lastName").value(child.getLastName()))
-                .andExpect(jsonPath("$.children[0].age").value(1));
+                .andExpect(jsonPath("$.children[0].firstName").value(childDTO.firstName()))
+                .andExpect(jsonPath("$.children[0].lastName").value(childDTO.lastName()))
+                .andExpect(jsonPath("$.children[0].age").value(1))
+                .andExpect(jsonPath("$.adults").isArray())
+                .andExpect(jsonPath("$.adults").isNotEmpty());
     }
 
     @Test
     void getChildrenListByAddress_shouldReturnEmptyList_whenNoChildrenExist() throws Exception {
-        when(populationService.getPersonListByAddress(person.getAddress())).thenReturn(personList);
+        PersonDTO personDTO =
+                new PersonDTO(
+                        person.getFirstName(),
+                        person.getLastName(),
+                        person.getAddress(),
+                        person.getCity(),
+                        person.getZip(),
+                        person.getPhone(),
+                        person.getEmail());
+
+        ChildrenAndAdultsDTO onlyAdultsDTO =
+                new ChildrenAndAdultsDTO(List.of(), List.of(personDTO));
+
+        when(contactInformationService.getChildrenListByAddress(person.getAddress()))
+                .thenReturn(onlyAdultsDTO);
 
         mockMvc.perform(get("/childAlert").param("address", person.getAddress()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.children").isArray())
-                .andExpect(jsonPath("$.children").isEmpty());
+                .andExpect(jsonPath("$.children").isEmpty())
+                .andExpect(jsonPath("$.adults").isArray())
+                .andExpect(jsonPath("$.adults").isNotEmpty());
     }
 }

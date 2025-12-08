@@ -43,66 +43,55 @@ public class PopulationControllerTest {
 
     Person personA;
     Person personB;
-    Person personC;
-    MedicalRecord medicalRecordA;
-    MedicalRecord medicalRecordC;
 
     @BeforeEach
     void setUp() {
         personA = new PersonTestBuilder().build();
         personB =
                 new PersonTestBuilder()
-                        .withFirstName("Jane")
-                        .withLastName("Smith")
-                        .withAddress("29 15th St")
-                        .withPhone("841-874-6513")
-                        .withEmail("janesmith@email.com")
-                        .build();
-        personC =
-                new PersonTestBuilder()
                         .withFirstName("Jojo")
                         .withEmail("jojodoe@email.com")
-                        .build();
-        medicalRecordA = new MedicalRecordTestBuilder().build();
-        medicalRecordC =
-                new MedicalRecordTestBuilder()
-                        .withFirstName(personC.getFirstName())
-                        .withLastName(personC.getLastName())
-                        .withBirthdate(LocalDate.parse("2010-12-01"))
-                        .withMedications(List.of())
-                        .withAllergies(List.of("peanut"))
                         .build();
     }
 
     @Test
     void getPersonListByLastName_shouldReturnPersonList_whenPersonWithLastNameExists()
             throws Exception {
-        when(populationService.getPersonListByLastName(personA.getLastName()))
-                .thenReturn(List.of(personA, personC));
         int personAAge = 40;
         int personBAge = 14;
-        when(medicalRecordService.mapToPersonWithMedicalInfosDTO(personA))
-                .thenReturn(
-                        new PersonWithMedicalInfosDTO(
-                                personA.getFirstName(),
-                                personA.getLastName(),
-                                personA.getAddress(),
-                                null,
-                                personA.getEmail(),
-                                personAAge,
-                                medicalRecordA.getMedications(),
-                                medicalRecordA.getAllergies()));
-        when(medicalRecordService.mapToPersonWithMedicalInfosDTO(personC))
-                .thenReturn(
-                        new PersonWithMedicalInfosDTO(
-                                personC.getFirstName(),
-                                personC.getLastName(),
-                                personC.getAddress(),
-                                null,
-                                personC.getEmail(),
-                                personBAge,
-                                medicalRecordC.getMedications(),
-                                medicalRecordC.getAllergies()));
+
+        MedicalRecord medicalRecordA = new MedicalRecordTestBuilder().build();
+        MedicalRecord medicalRecordC =
+                new MedicalRecordTestBuilder()
+                        .withFirstName(personB.getFirstName())
+                        .withLastName(personB.getLastName())
+                        .withBirthdate(LocalDate.parse("2010-12-01"))
+                        .withMedications(List.of())
+                        .withAllergies(List.of("peanut"))
+                        .build();
+        PersonWithMedicalInfosDTO personAWithMedicalInfosDTO =
+                new PersonWithMedicalInfosDTO(
+                        personA.getFirstName(),
+                        personA.getLastName(),
+                        personA.getAddress(),
+                        personA.getPhone(),
+                        personA.getEmail(),
+                        personAAge,
+                        medicalRecordA.getMedications(),
+                        medicalRecordA.getAllergies());
+        PersonWithMedicalInfosDTO personCWithMedicalInfosDTO =
+                new PersonWithMedicalInfosDTO(
+                        personB.getFirstName(),
+                        personB.getLastName(),
+                        personB.getAddress(),
+                        personB.getPhone(),
+                        personB.getEmail(),
+                        personBAge,
+                        medicalRecordC.getMedications(),
+                        medicalRecordC.getAllergies());
+
+        when(populationService.getPersonListByLastName(personA.getLastName()))
+                .thenReturn(List.of(personAWithMedicalInfosDTO, personCWithMedicalInfosDTO));
 
         mockMvc.perform(
                         get("/personInfolastName")
@@ -114,19 +103,19 @@ public class PopulationControllerTest {
                 .andExpect(
                         jsonPath(
                                 "$[*].firstName",
-                                containsInAnyOrder(personA.getFirstName(), personC.getFirstName())))
+                                containsInAnyOrder(personA.getFirstName(), personB.getFirstName())))
                 .andExpect(
                         jsonPath(
                                 "$[*].lastName",
-                                containsInAnyOrder(personA.getLastName(), personC.getLastName())))
+                                containsInAnyOrder(personA.getLastName(), personB.getLastName())))
                 .andExpect(
                         jsonPath(
                                 "$[*].address",
-                                containsInAnyOrder(personA.getAddress(), personC.getAddress())))
+                                containsInAnyOrder(personA.getAddress(), personB.getAddress())))
                 .andExpect(
                         jsonPath(
                                 "$[*].email",
-                                containsInAnyOrder(personA.getEmail(), personC.getEmail())))
+                                containsInAnyOrder(personA.getEmail(), personB.getEmail())))
                 .andExpect(jsonPath("$[*].age", containsInAnyOrder(personAAge, personBAge)))
                 .andExpect(
                         jsonPath(
@@ -165,8 +154,16 @@ public class PopulationControllerTest {
 
     @Test
     void getAllEmailFromCity_shouldReturnEmailList_whenPersonsExistInCity() throws Exception {
-        when(populationService.getPersonListByCity(personA.getCity()))
-                .thenReturn(List.of(personA, personB));
+        personB =
+                new PersonTestBuilder()
+                        .withFirstName("Jane")
+                        .withLastName("Smith")
+                        .withAddress("29 15th St")
+                        .withPhone("841-874-6513")
+                        .withEmail("janesmith@email.com")
+                        .build();
+        when(populationService.getPersonEmailListByCity(personA.getCity()))
+                .thenReturn(List.of(personA.getEmail(), personB.getEmail()));
 
         mockMvc.perform(
                         get("/communityEmail")
@@ -181,7 +178,8 @@ public class PopulationControllerTest {
 
     @Test
     void getAllEmailFromCity_shouldReturnEmptyList_whenNoPersonsExistInCity() throws Exception {
-        when(populationService.getPersonListByCity("NonExistingCity")).thenReturn(List.of());
+        when(populationService.getPersonEmailListByCity("NonExistingCity")).thenReturn(List.of());
+
         mockMvc.perform(
                         get("/communityEmail")
                                 .param("city", "NonExistingCity")

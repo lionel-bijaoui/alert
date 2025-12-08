@@ -8,11 +8,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.openclassrooms.safetynet.alert.dto.PersonWithMedicalInfosDTO;
+import com.openclassrooms.safetynet.alert.dto.PopulationByFireStationsDTO;
 import com.openclassrooms.safetynet.alert.model.FireStation;
 import com.openclassrooms.safetynet.alert.model.MedicalRecord;
 import com.openclassrooms.safetynet.alert.model.Person;
-import com.openclassrooms.safetynet.alert.service.FireStationService;
-import com.openclassrooms.safetynet.alert.service.MedicalRecordService;
 import com.openclassrooms.safetynet.alert.service.PopulationService;
 import com.openclassrooms.safetynet.alert.utils.FireStationTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.MedicalRecordTestBuilder;
@@ -28,6 +27,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.Map;
 
 @WebMvcTest(HazardController.class)
 @DisplayNameGeneration(TestSentenceGenerator.class)
@@ -35,33 +35,27 @@ public class HazardControllerTest {
 
     @Autowired MockMvc mockMvc;
 
-    @MockitoBean FireStationService fireStationService;
-
-    @MockitoBean MedicalRecordService medicalRecordService;
-
     @MockitoBean PopulationService populationService;
 
     @Test
     void
             getHouseholdsByFireStationNumberList_shouldReturnHouseholdsList_whenFireStationNumberListExists()
                     throws Exception {
-        FireStation fireStation = new FireStationTestBuilder().build();
         Person person = new PersonTestBuilder().build();
         MedicalRecord medicalRecord = new MedicalRecordTestBuilder().build();
-        when(fireStationService.getFireStationListByFireStationNumberList(anyList()))
-                .thenReturn(List.of(fireStation));
-        when(populationService.getPersonListByAddressList(anyList())).thenReturn(List.of(person));
-        when(medicalRecordService.mapToPersonWithMedicalInfosDTO(person))
-                .thenReturn(
-                        new PersonWithMedicalInfosDTO(
-                                person.getFirstName(),
-                                person.getLastName(),
-                                person.getAddress(),
-                                person.getPhone(),
-                                person.getEmail(),
-                                30,
-                                medicalRecord.getMedications(),
-                                medicalRecord.getAllergies()));
+
+        PersonWithMedicalInfosDTO personWithMedicalInfosDTO =
+                new PersonWithMedicalInfosDTO(
+                        person.getFirstName(),
+                        person.getLastName(),
+                        person.getAddress(),
+                        person.getPhone(),
+                        person.getEmail(),
+                        30,
+                        medicalRecord.getMedications(),
+                        medicalRecord.getAllergies());
+        when(populationService.getHouseholdsByFireStationNumberList(anyList()))
+                .thenReturn(Map.of(person.getAddress(), List.of(personWithMedicalInfosDTO)));
 
         String base = "$['" + person.getAddress() + "'][0]";
 
@@ -88,9 +82,8 @@ public class HazardControllerTest {
     void
             getHouseholdsByFireStationNumberList_shouldReturnEmptyList_whenFireStationNumberListDoesNotExist()
                     throws Exception {
-        when(fireStationService.getFireStationListByFireStationNumberList(anyList()))
-                .thenReturn(List.of());
-        when(populationService.getPersonListByAddressList(anyList())).thenReturn(List.of());
+        when(populationService.getHouseholdsByFireStationNumberList(anyList()))
+                .thenReturn(Map.of());
 
         mockMvc.perform(
                         get("/flood/stations")
@@ -114,21 +107,21 @@ public class HazardControllerTest {
         FireStation fireStation = new FireStationTestBuilder().build();
         Person person = new PersonTestBuilder().build();
         MedicalRecord medicalRecord = new MedicalRecordTestBuilder().build();
-        when(populationService.getPersonListByAddress(person.getAddress()))
-                .thenReturn(List.of(person));
-        when(fireStationService.getFireStationNumberListByAddress(person.getAddress()))
-                .thenReturn(List.of(fireStation.getStation()));
-        when(medicalRecordService.mapToPersonWithMedicalInfosDTO(person))
-                .thenReturn(
-                        new PersonWithMedicalInfosDTO(
-                                person.getFirstName(),
-                                person.getLastName(),
-                                person.getAddress(),
-                                person.getPhone(),
-                                person.getEmail(),
-                                30,
-                                medicalRecord.getMedications(),
-                                medicalRecord.getAllergies()));
+        PopulationByFireStationsDTO populationByFireStationsDTO =
+                new PopulationByFireStationsDTO(
+                        List.of(fireStation.getStation()),
+                        List.of(
+                                new PersonWithMedicalInfosDTO(
+                                        person.getFirstName(),
+                                        person.getLastName(),
+                                        person.getAddress(),
+                                        person.getPhone(),
+                                        person.getEmail(),
+                                        30,
+                                        medicalRecord.getMedications(),
+                                        medicalRecord.getAllergies())));
+        when(populationService.getPersonAndFireStationListByAddress(person.getAddress()))
+                .thenReturn(populationByFireStationsDTO);
 
         String base = "$.population[0]";
 
@@ -155,9 +148,8 @@ public class HazardControllerTest {
     @Test
     void getPersonAndFireStationListByAddress_shouldReturnEmptyLists_whenAddressNotFound()
             throws Exception {
-        when(populationService.getPersonListByAddress(anyString())).thenReturn(List.of());
-        when(fireStationService.getFireStationNumberListByAddress(anyString()))
-                .thenReturn(List.of());
+        when(populationService.getPersonAndFireStationListByAddress(anyString()))
+                .thenReturn(new PopulationByFireStationsDTO(List.of(), List.of()));
 
         mockMvc.perform(get("/fire").param("address", "Unknown"))
                 .andExpect(status().isOk())

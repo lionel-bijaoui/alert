@@ -1,14 +1,7 @@
 package com.openclassrooms.safetynet.alert.controller;
 
-import com.openclassrooms.safetynet.alert.dto.ChildDTO;
 import com.openclassrooms.safetynet.alert.dto.ChildrenAndAdultsDTO;
-import com.openclassrooms.safetynet.alert.dto.PersonDTO;
-import com.openclassrooms.safetynet.alert.dto.PersonWithAge;
-import com.openclassrooms.safetynet.alert.mapper.PersonMapper;
-import com.openclassrooms.safetynet.alert.model.Person;
-import com.openclassrooms.safetynet.alert.service.FireStationService;
-import com.openclassrooms.safetynet.alert.service.MedicalRecordService;
-import com.openclassrooms.safetynet.alert.service.PopulationService;
+import com.openclassrooms.safetynet.alert.service.ContactInformationService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,28 +10,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /** Controller for handling alert-related requests. */
 @RestController
 public class AlertController {
 
-    private final FireStationService fireStationService;
-    private final PopulationService populationService;
-    private final MedicalRecordService medicalRecordService;
-    private final PersonMapper personMapper;
+    private final ContactInformationService contactInformationService;
 
-    public AlertController(
-            FireStationService fireStationService,
-            PopulationService populationService,
-            MedicalRecordService medicalRecordService,
-            PersonMapper personMapper) {
-
-        this.fireStationService = fireStationService;
-        this.populationService = populationService;
-        this.medicalRecordService = medicalRecordService;
-        this.personMapper = personMapper;
+    public AlertController(ContactInformationService contactInformationService) {
+        this.contactInformationService = contactInformationService;
     }
 
     /**
@@ -52,13 +32,7 @@ public class AlertController {
     public ResponseEntity<List<String>> getPhoneNumberListByFireStationNumber(
             @RequestParam int firestation) {
         List<String> result =
-                populationService
-                        .getPersonListByAddressList(
-                                fireStationService.getFireStationAddressListByFireStationNumber(
-                                        firestation))
-                        .stream()
-                        .map(Person::getPhone)
-                        .toList();
+                contactInformationService.getPhoneNumberListByFireStationNumber(firestation);
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
@@ -73,27 +47,7 @@ public class AlertController {
     @RequestMapping("/childAlert")
     public ResponseEntity<ChildrenAndAdultsDTO> getChildrenListByAddress(
             @RequestParam String address) {
-        List<Person> personsAtAddress = populationService.getPersonListByAddress(address);
-
-        // Partition into children and adults
-        Map<Boolean, List<PersonWithAge>> partitioned =
-                medicalRecordService.enrichPersonsWithAge(personsAtAddress).stream()
-                        .collect(Collectors.partitioningBy(p -> p.age() <= 18));
-
-        List<ChildDTO> children =
-                partitioned.get(true).stream()
-                        .map(
-                                child ->
-                                        new ChildDTO(
-                                                child.person().getFirstName(),
-                                                child.person().getLastName(),
-                                                child.age()))
-                        .toList();
-
-        List<PersonDTO> adults =
-                partitioned.get(false).stream().map(p -> personMapper.toDto(p.person())).toList();
-
-        ChildrenAndAdultsDTO result = new ChildrenAndAdultsDTO(children, adults);
+        ChildrenAndAdultsDTO result = contactInformationService.getChildrenListByAddress(address);
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 }
