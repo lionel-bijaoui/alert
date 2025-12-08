@@ -68,8 +68,7 @@ public class FireStationService {
     }
 
     public List<Integer> getFireStationNumberListByAddress(String address) {
-        return jsonFireStationRepository
-                .findAllByAddress(address)
+        return jsonFireStationRepository.findAllByAddress(address).stream()
                 .map(FireStation::getStation)
                 .toList();
     }

@@ -125,9 +125,7 @@ class JsonFireStationRepositoryTest {
         when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
 
         List<FireStation> foundFireStations =
-                fireStationRepository
-                        .findAllByAddress(fireStation.getAddress().toUpperCase())
-                        .toList();
+                fireStationRepository.findAllByAddress(fireStation.getAddress().toUpperCase());
 
         assertNotNull(foundFireStations);
         assertEquals(
@@ -146,7 +144,7 @@ class JsonFireStationRepositoryTest {
         when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
 
         List<FireStation> foundFireStations =
-                fireStationRepository.findAllByAddress("Nonexistent Address 456").toList();
+                fireStationRepository.findAllByAddress("Nonexistent Address 456");
 
         assertNotNull(foundFireStations);
         assertTrue(

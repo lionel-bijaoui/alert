@@ -20,7 +20,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayNameGeneration(TestSentenceGenerator.class)
@@ -151,7 +150,7 @@ class FireStationServiceTest {
     @Test
     void getFireStationNumberListByAddress_shouldReturnNumberList_whenExists() {
         when(jsonFireStationRepository.findAllByAddress(existingFireStation.getAddress()))
-                .thenReturn(Stream.of(existingFireStation));
+                .thenReturn(List.of(existingFireStation));
 
         List<Integer> result =
                 fireStationService.getFireStationNumberListByAddress(
@@ -167,7 +166,7 @@ class FireStationServiceTest {
 
     @Test
     void getFireStationNumberListByAddress_shouldEmptyList_whenNotExists() {
-        when(jsonFireStationRepository.findAllByAddress(anyString())).thenReturn(Stream.of());
+        when(jsonFireStationRepository.findAllByAddress(anyString())).thenReturn(List.of());
 
         List<Integer> result =
                 fireStationService.getFireStationNumberListByAddress(
