@@ -25,14 +25,14 @@ public class AlertController {
      * Return a list of phone numbers of residents served by the fire station. We will use it to
      * send emergency text messages to specific households.
      *
-     * @param firestation the fire station number
+     * @param fireStationNumber the fire station number
      * @return a list of phone numbers of residents served by the fire station
      */
     @RequestMapping("/phoneAlert")
     public ResponseEntity<List<String>> getPhoneNumberListByFireStationNumber(
-            @RequestParam int firestation) {
+            @RequestParam(name = "firestation") int fireStationNumber) {
         List<String> body =
-                contactInformationService.getPhoneNumberListByFireStationNumber(firestation);
+                contactInformationService.getPhoneNumberListByFireStationNumber(fireStationNumber);
 
         return ResponseEntity.status(HttpStatus.OK).body(body);
     }
