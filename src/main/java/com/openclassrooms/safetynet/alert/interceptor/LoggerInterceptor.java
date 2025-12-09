@@ -20,7 +20,7 @@ public class LoggerInterceptor implements HandlerInterceptor {
             @Nullable HttpServletResponse response,
             @Nullable Object handler) {
         // Log basic request information
-        log.info(
+        log.debug(
                 "Incoming request: {} {}{} from {}",
                 request.getMethod(),
                 request.getRequestURI(),
@@ -36,20 +36,24 @@ public class LoggerInterceptor implements HandlerInterceptor {
             HttpServletResponse response,
             @Nullable Object handler,
             Exception ex) {
-        // Log response status
-        log.info(
-                "← {} {} returned {}",
-                request.getMethod(),
-                request.getRequestURI(),
-                response.getStatus());
+        int status = response.getStatus();
 
-        // Log error responses (4xx and 5xx)
-        if (response.getStatus() >= 400) {
-            log.warn(
-                    "❌ Error response: {} for {} {}",
-                    response.getStatus(),
+        // Log error responses (4xx and 5xx) at appropriate levels
+        if (status >= 500) {
+            log.error(
+                    "❌ Server error: {} for {} {}",
+                    status,
                     request.getMethod(),
                     request.getRequestURI());
+        } else if (status >= 400) {
+            log.warn(
+                    "⚠️ Client error: {} for {} {}",
+                    status,
+                    request.getMethod(),
+                    request.getRequestURI());
+        } else if (log.isDebugEnabled()) {
+            // Log successful responses at DEBUG level
+            log.debug("✓ {} {} returned {}", request.getMethod(), request.getRequestURI(), status);
         }
     }
 }
