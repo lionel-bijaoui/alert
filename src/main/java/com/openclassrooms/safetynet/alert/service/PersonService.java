@@ -7,11 +7,14 @@ import com.openclassrooms.safetynet.alert.repository.JsonPersonRepository;
 
 import jakarta.validation.constraints.NotNull;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 /** Service class for managing Person entities. */
+@Slf4j
 @Service
 public class PersonService {
 
@@ -37,6 +40,10 @@ public class PersonService {
                         person.getFirstName(), person.getLastName());
 
         if (maybePerson.isPresent()) {
+            log.warn(
+                    "Attempted to add a person that already exists: {} {}",
+                    person.getFirstName(),
+                    person.getLastName());
             throw new ConflictException(
                     "Person already exists: " + person.getFirstName() + " " + person.getLastName());
         }
@@ -58,6 +65,10 @@ public class PersonService {
                         person.getFirstName(), person.getLastName());
 
         if (maybePerson.isEmpty()) {
+            log.warn(
+                    "Attempted to update a person that does not exist : {} {}",
+                    person.getFirstName(),
+                    person.getLastName());
             throw new ResourceNotFoundException(
                     "Person does not exist: " + person.getFirstName() + " " + person.getLastName());
         }
@@ -84,6 +95,8 @@ public class PersonService {
                 jsonPersonRepository.findByFirstNameAndLastName(firstName, lastName);
 
         if (maybePerson.isEmpty()) {
+            log.warn(
+                    "Attempted to delete a person that does not exist: {} {}", firstName, lastName);
             throw new ResourceNotFoundException(
                     "No existing person to delete: " + firstName + " " + lastName);
         }

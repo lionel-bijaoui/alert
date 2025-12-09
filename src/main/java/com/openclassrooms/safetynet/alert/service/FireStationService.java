@@ -40,6 +40,9 @@ public class FireStationService {
                 jsonFireStationRepository.findByAddress(fireStation.getAddress());
 
         if (maybeFireStation.isPresent()) {
+            log.warn(
+                    "Attempted to add a fire station that already exists for address: {}",
+                    fireStation.getAddress());
             throw new ConflictException(
                     "Fire station already exists for address: " + fireStation.getAddress());
         }
@@ -60,6 +63,9 @@ public class FireStationService {
                 jsonFireStationRepository.findByAddress(fireStation.getAddress());
 
         if (maybeFireStation.isEmpty()) {
+            log.warn(
+                    "Attempted to update a fire station that does not exist for address: {}",
+                    fireStation.getAddress());
             throw new ResourceNotFoundException(
                     "Fire station does not exist for address: " + fireStation.getAddress());
         }
@@ -80,6 +86,9 @@ public class FireStationService {
         Optional<FireStation> maybeFireStation = jsonFireStationRepository.findByAddress(address);
 
         if (maybeFireStation.isEmpty()) {
+            log.warn(
+                    "Attempted to delete a fire station that does not exist for address: {}",
+                    address);
             throw new ResourceNotFoundException(
                     "No existing fire station to delete at address: " + address);
         }

@@ -46,6 +46,7 @@ public class MedicalRecordService {
                         && (birthdate.isBefore(currentDate) || birthdate.isEqual(currentDate));
 
         if (!isBirthdateValid) {
+            log.error("Birthdate is not valid: {} (now is {})", birthdate, currentDate);
             throw new IllegalArgumentException("Birthdate is invalid " + birthdate);
         }
 
@@ -69,6 +70,10 @@ public class MedicalRecordService {
                         medicalRecord.getFirstName(), medicalRecord.getLastName());
 
         if (maybeMedicalRecord.isPresent()) {
+            log.error(
+                    "Attempt to add a medical record that already exists for: {} {}",
+                    medicalRecord.getFirstName(),
+                    medicalRecord.getLastName());
             throw new ConflictException(
                     "Medical record already exists for: "
                             + medicalRecord.getFirstName()
@@ -93,6 +98,10 @@ public class MedicalRecordService {
                         medicalRecord.getFirstName(), medicalRecord.getLastName());
 
         if (maybeMedicalRecord.isEmpty()) {
+            log.error(
+                    "Attempt to update non-existing medical record for: {} {}",
+                    medicalRecord.getFirstName(),
+                    medicalRecord.getLastName());
             throw new ResourceNotFoundException("Medical record does not exist");
         }
 
@@ -113,9 +122,15 @@ public class MedicalRecordService {
     public void deleteMedicalRecord(String firstName, String lastName) {
         Optional<MedicalRecord> maybeMedicalRecord =
                 medicalRecordRepository.findByFirstNameAndLastName(firstName, lastName);
+
         if (maybeMedicalRecord.isEmpty()) {
+            log.warn(
+                    "Attempt to delete non-existing medical record for: {} {}",
+                    firstName,
+                    lastName);
             throw new ResourceNotFoundException("Medical record does not exist");
         }
+
         medicalRecordRepository.deleteByFirstNameAndLastName(firstName, lastName);
     }
 

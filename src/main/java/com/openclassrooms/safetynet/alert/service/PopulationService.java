@@ -82,8 +82,10 @@ public class PopulationService {
                 getPersonListByAddress(address).stream()
                         .map(medicalRecordService::mapToPersonWithMedicalInfosDTO)
                         .toList();
+
         List<Integer> fireStationNumberList =
                 fireStationService.getFireStationNumberListByAddress(address);
+
         return new PopulationByFireStationsDTO(fireStationNumberList, personList);
     }
 
