@@ -6,6 +6,7 @@ import com.openclassrooms.safetynet.alert.model.Person;
 import com.openclassrooms.safetynet.alert.service.PersonService;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,7 +63,8 @@ public class PersonController {
      */
     @DeleteMapping
     public ResponseEntity<Void> deletePerson(
-            @RequestParam String firstName, @RequestParam String lastName) {
+            @RequestParam @NotBlank(message = "firstName is required") String firstName,
+            @RequestParam @NotBlank(message = "lastName is required") String lastName) {
         personService.deletePerson(firstName, lastName);
 
         return ResponseEntity.noContent().build();

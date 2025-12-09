@@ -4,9 +4,12 @@ import com.openclassrooms.safetynet.alert.dto.PersonWithMedicalInfosDTO;
 import com.openclassrooms.safetynet.alert.dto.PopulationByFireStationsDTO;
 import com.openclassrooms.safetynet.alert.service.PopulationService;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,10 +34,12 @@ public class HazardController {
      * @param fireStationNumberList a list of fire station numbers
      * @return a map of address to list of persons with medical infos
      */
-    @RequestMapping("/flood/stations")
+    @GetMapping("/flood/stations")
     public ResponseEntity<Map<String, List<PersonWithMedicalInfosDTO>>>
             getHouseholdsByFireStationNumberList(
-                    @RequestParam(name = "stations") List<Integer> fireStationNumberList) {
+                    @RequestParam(name = "stations")
+                            @NotNull(message = "fireStationNumberList is required")
+                            List<Integer> fireStationNumberList) {
         Map<String, List<PersonWithMedicalInfosDTO>> body =
                 populationService.getHouseholdsByFireStationNumberList(fireStationNumberList);
 
@@ -49,9 +54,9 @@ public class HazardController {
      * @param address the address to search for residents
      * @return a PopulationByFireStationsDTO
      */
-    @RequestMapping("/fire")
+    @GetMapping("/fire")
     public ResponseEntity<PopulationByFireStationsDTO> getPersonAndFireStationListByAddress(
-            @RequestParam String address) {
+            @RequestParam @NotBlank(message = "address is required") String address) {
         PopulationByFireStationsDTO body =
                 populationService.getPersonAndFireStationListByAddress(address);
 

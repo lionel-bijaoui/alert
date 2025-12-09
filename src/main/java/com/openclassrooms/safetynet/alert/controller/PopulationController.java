@@ -3,9 +3,11 @@ package com.openclassrooms.safetynet.alert.controller;
 import com.openclassrooms.safetynet.alert.dto.PersonWithMedicalInfosDTO;
 import com.openclassrooms.safetynet.alert.service.PopulationService;
 
+import jakarta.validation.constraints.NotBlank;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,9 +30,9 @@ public class PopulationController {
      * @param lastName the last name of the person
      * @return a list of persons with medical infos
      */
-    @RequestMapping("/personInfolastName")
+    @GetMapping("/personInfolastName")
     public ResponseEntity<List<PersonWithMedicalInfosDTO>> getPersonListByLastName(
-            @RequestParam String lastName) {
+            @RequestParam @NotBlank(message = "lastName is required") String lastName) {
         List<PersonWithMedicalInfosDTO> body = populationService.getPersonListByLastName(lastName);
 
         return ResponseEntity.status(HttpStatus.OK).body(body);
@@ -42,8 +44,8 @@ public class PopulationController {
      * @param city the city name
      * @return a list of email addresses
      */
-    @RequestMapping("/communityEmail")
-    public ResponseEntity<List<String>> getAllEmailFromCity(@RequestParam String city) {
+    @GetMapping("/communityEmail")
+    public ResponseEntity<List<String>> getAllEmailFromCity(@RequestParam @NotBlank(message = "city is required") String city) {
         List<String> body = populationService.getPersonEmailListByCity(city);
 
         return ResponseEntity.status(HttpStatus.OK).body(body);

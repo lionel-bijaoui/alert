@@ -8,6 +8,8 @@ import com.openclassrooms.safetynet.alert.service.FireStationService;
 import com.openclassrooms.safetynet.alert.service.PopulationService;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -69,7 +71,8 @@ public class FireStationController {
      * @return a ResponseEntity with no content
      */
     @DeleteMapping
-    public ResponseEntity<Void> deleteFireStation(@RequestParam String address) {
+    public ResponseEntity<Void> deleteFireStation(
+            @RequestParam @NotBlank(message = "address is required") String address) {
         fireStationService.deleteFireStation(address);
 
         return ResponseEntity.noContent().build();
@@ -87,7 +90,7 @@ public class FireStationController {
      */
     @GetMapping
     public ResponseEntity<PopulationByFireStationDTO> getPersonListByStationNumber(
-            @RequestParam int stationNumber) {
+            @RequestParam @NotNull(message = "stationNumber is required") int stationNumber) {
         PopulationByFireStationDTO body =
                 populationService.getPersonListByStationNumber(stationNumber);
 

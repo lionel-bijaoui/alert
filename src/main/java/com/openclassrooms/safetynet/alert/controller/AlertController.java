@@ -3,9 +3,12 @@ package com.openclassrooms.safetynet.alert.controller;
 import com.openclassrooms.safetynet.alert.dto.ChildrenAndAdultsDTO;
 import com.openclassrooms.safetynet.alert.service.ContactInformationService;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,9 +31,10 @@ public class AlertController {
      * @param fireStationNumber the fire station number
      * @return a list of phone numbers of residents served by the fire station
      */
-    @RequestMapping("/phoneAlert")
+    @GetMapping("/phoneAlert")
     public ResponseEntity<List<String>> getPhoneNumberListByFireStationNumber(
-            @RequestParam(name = "firestation") int fireStationNumber) {
+            @RequestParam(name = "firestation") @NotNull(message = "firestation is required")
+                    int fireStationNumber) {
         List<String> body =
                 contactInformationService.getPhoneNumberListByFireStationNumber(fireStationNumber);
 
@@ -45,9 +49,9 @@ public class AlertController {
      * @param address the address to search for children
      * @return a ChildrenAndAdultsDTO
      */
-    @RequestMapping("/childAlert")
+    @GetMapping("/childAlert")
     public ResponseEntity<ChildrenAndAdultsDTO> getChildrenListByAddress(
-            @RequestParam String address) {
+            @RequestParam @NotBlank(message = "address is required") String address) {
         ChildrenAndAdultsDTO body = contactInformationService.getChildrenListByAddress(address);
 
         return ResponseEntity.status(HttpStatus.OK).body(body);
