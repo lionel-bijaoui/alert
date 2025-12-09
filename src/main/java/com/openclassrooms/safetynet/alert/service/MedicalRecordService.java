@@ -10,14 +10,18 @@ import com.openclassrooms.safetynet.alert.repository.MedicalRecordRepository;
 
 import jakarta.validation.constraints.NotNull;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /** Service class for managing medical records. */
+@Slf4j
 @Service
 public class MedicalRecordService {
 
@@ -125,28 +129,29 @@ public class MedicalRecordService {
      * Enrich a list of persons with their respective ages to cache ages and avoid multiple lookups
      *
      * @param persons list of person
-     * @return Stream of PersonWithAge
+     * @return list of PersonWithAge (can be smaller than input if medical records are missing)
      */
     public List<PersonWithAge> enrichPersonsWithAge(List<Person> persons) {
         return persons.stream()
                 .map(
-                        person ->
-                                new PersonWithAge(
-                                        person,
-                                        calculateAgeFromBirthdate(
-                                                getMedicalRecordByFullName(
-                                                                person.getFirstName(),
-                                                                person.getLastName())
-                                                        .orElseThrow(
-                                                                () ->
-                                                                        new ResourceNotFoundException(
-                                                                                "No medical record found for: "
-                                                                                        + person
-                                                                                                .getFirstName()
-                                                                                        + " "
-                                                                                        + person
-                                                                                                .getLastName()))
-                                                        .getBirthdate())))
+                        person -> {
+                            Optional<MedicalRecord> medicalRecord =
+                                    getMedicalRecordByFullName(
+                                            person.getFirstName(), person.getLastName());
+
+                            if (medicalRecord.isEmpty()) {
+                                log.warn(
+                                        "No medical record found for: {} {} - person excluded from result",
+                                        person.getFirstName(),
+                                        person.getLastName());
+                                return null;
+                            }
+
+                            return new PersonWithAge(
+                                    person,
+                                    calculateAgeFromBirthdate(medicalRecord.get().getBirthdate()));
+                        })
+                .filter(Objects::nonNull)
                 .toList();
     }
 

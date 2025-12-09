@@ -209,17 +209,27 @@ class MedicalRecordServiceTest {
     }
 
     @Test
-    void enrichPersonsWithAge_shouldThrow_whenMedicalRecordNotExists() {
+    void enrichPersonsWithAge_shouldRemovePerson_whenMedicalRecordNotExists() {
         Person person = new PersonTestBuilder().build();
-        List<Person> persons = List.of(person);
+        MedicalRecord medicalRecord = new MedicalRecordTestBuilder().build();
+        Person person2 = new PersonTestBuilder().withFirstName("No").withLastName("Body").build();
+        List<Person> persons = List.of(person, person2);
 
         when(medicalRecordRepository.findByFirstNameAndLastName(
                         person.getFirstName(), person.getLastName()))
+                .thenReturn(Optional.of(medicalRecord));
+        when(medicalRecordRepository.findByFirstNameAndLastName(
+                        person2.getFirstName(), person2.getLastName()))
                 .thenReturn(Optional.empty());
 
-        assertThrows(
-                ResourceNotFoundException.class,
-                () -> medicalRecordService.enrichPersonsWithAge(persons));
+        List<PersonWithAge> enrichedList = medicalRecordService.enrichPersonsWithAge(persons);
+
+        assertEquals(1, enrichedList.size());
+        assertEquals(person.getFirstName(), enrichedList.getFirst().person().getFirstName());
+        // The person without medical record should be excluded and not be found in the result
+        assertFalse(
+                enrichedList.stream()
+                        .anyMatch(p -> p.person().getFirstName().equals(person2.getFirstName())));
     }
 
     @Test
