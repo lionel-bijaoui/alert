@@ -23,6 +23,13 @@ public class PersonService {
 
     // CRUD operations for Person
 
+    /**
+     * Add a new person.
+     *
+     * @param person the person to add
+     * @return the saved person
+     * @throws ConflictException if a person already exists with the same first and last name
+     */
     @NotNull
     public Person addPerson(Person person) {
         Optional<Person> maybePerson =
@@ -37,6 +44,13 @@ public class PersonService {
         return jsonPersonRepository.save(person);
     }
 
+    /**
+     * Update an existing person.
+     *
+     * @param person the person to update
+     * @return the updated person
+     * @throws ResourceNotFoundException if the person does not exist
+     */
     @NotNull
     public Person updatePerson(Person person) {
         Optional<Person> maybePerson =
@@ -58,6 +72,13 @@ public class PersonService {
         return jsonPersonRepository.save(existing);
     }
 
+    /**
+     * Delete a person by first and last name.
+     *
+     * @param firstName the first name of the person to delete
+     * @param lastName the last name of the person to delete
+     * @throws ResourceNotFoundException if the person does not exist
+     */
     public void deletePerson(String firstName, String lastName) {
         Optional<Person> maybePerson =
                 jsonPersonRepository.findByFirstNameAndLastName(firstName, lastName);

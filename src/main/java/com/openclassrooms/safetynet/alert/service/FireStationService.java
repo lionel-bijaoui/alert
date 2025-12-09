@@ -27,6 +27,13 @@ public class FireStationService {
 
     // CRUD operations for FireStation
 
+    /**
+     * Add a new fire station.
+     *
+     * @param fireStation the fire station to add
+     * @return the saved fire station
+     * @throws ConflictException if a fire station already exists for the given address
+     */
     @NotNull
     public FireStation addFireStation(FireStation fireStation) {
         Optional<FireStation> maybeFireStation =
@@ -40,6 +47,13 @@ public class FireStationService {
         return jsonFireStationRepository.save(fireStation);
     }
 
+    /**
+     * Update an existing fire station.
+     *
+     * @param fireStation the fire station to update
+     * @return the updated fire station
+     * @throws ResourceNotFoundException if the fire station does not exist for the given address
+     */
     @NotNull
     public FireStation updateFireStation(FireStation fireStation) {
         Optional<FireStation> maybeFireStation =
@@ -56,6 +70,12 @@ public class FireStationService {
         return jsonFireStationRepository.save(existingFireStation);
     }
 
+    /**
+     * Delete a fire station by address.
+     *
+     * @param address the address of the fire station to delete
+     * @throws ResourceNotFoundException if the fire station does not exist for the given address
+     */
     public void deleteFireStation(String address) {
         Optional<FireStation> maybeFireStation = jsonFireStationRepository.findByAddress(address);
 

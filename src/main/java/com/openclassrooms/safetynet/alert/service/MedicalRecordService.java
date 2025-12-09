@@ -27,6 +27,14 @@ public class MedicalRecordService {
         this.medicalRecordRepository = medicalRecordRepository;
     }
 
+    /**
+     * Calculate age from birthdate
+     *
+     * @param birthdate the birthdate
+     * @return the age in years
+     * @throws IllegalArgumentException if birthdate is null or in the future
+     */
+    @NotNull
     public static Integer calculateAgeFromBirthdate(LocalDate birthdate) {
         LocalDate currentDate = LocalDate.now();
         boolean isBirthdateValid =
@@ -42,6 +50,14 @@ public class MedicalRecordService {
 
     // CRUD operations for MedicalRecord
 
+    /**
+     * Add a new medical record
+     *
+     * @param medicalRecord the medical record to add
+     * @return the added medical record
+     * @throws ConflictException if a medical record already exists for the given first and last
+     *     name
+     */
     @NotNull
     public MedicalRecord addMedicalRecord(MedicalRecord medicalRecord) {
         Optional<MedicalRecord> maybeMedicalRecord =
@@ -59,6 +75,13 @@ public class MedicalRecordService {
         return medicalRecordRepository.save(medicalRecord);
     }
 
+    /**
+     * Update an existing medical record
+     *
+     * @param medicalRecord the medical record to update
+     * @return the updated medical record
+     * @throws ResourceNotFoundException if the medical record does not exist
+     */
     @NotNull
     public MedicalRecord updateMedicalRecord(MedicalRecord medicalRecord) {
         Optional<MedicalRecord> maybeMedicalRecord =
@@ -76,6 +99,13 @@ public class MedicalRecordService {
         return medicalRecordRepository.save(existingMedicalRecord);
     }
 
+    /**
+     * Delete a medical record by first and last name
+     *
+     * @param firstName the first name
+     * @param lastName the last name
+     * @throws ResourceNotFoundException if the medical record does not exist
+     */
     public void deleteMedicalRecord(String firstName, String lastName) {
         Optional<MedicalRecord> maybeMedicalRecord =
                 medicalRecordRepository.findByFirstNameAndLastName(firstName, lastName);
