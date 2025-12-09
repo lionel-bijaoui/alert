@@ -36,13 +36,19 @@ public class PopulationService {
 
     public List<Person> getPersonListByAddressList(List<String> addressList) {
         return jsonPersonRepository.findAll().stream()
-                .filter(person -> addressList.contains(person.getAddress()))
+                .filter(
+                        person ->
+                                addressList.stream()
+                                        .anyMatch(
+                                                address ->
+                                                        address.equalsIgnoreCase(
+                                                                person.getAddress())))
                 .toList();
     }
 
     public List<Person> getPersonListByAddress(String address) {
         return jsonPersonRepository.findAll().stream()
-                .filter(person -> person.getAddress().equals(address))
+                .filter(person -> person.getAddress().equalsIgnoreCase(address))
                 .toList();
     }
 
