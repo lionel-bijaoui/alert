@@ -61,6 +61,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problem);
     }
 
+    @ExceptionHandler(DataStorePersistenceException.class)
+    protected ResponseEntity<ProblemDetail> handleDataStorePersistence(
+            DataStorePersistenceException ex, HttpServletRequest request) {
+        log.error(ex.getMessage(), ex);
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        problem.setTitle("Data Store Persistence Error");
+        problem.setProperty("path", request.getRequestURI());
+        problem.setProperty("traceId", traceId());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problem);
+    }
+
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<ProblemDetail> handleGeneric(
             Exception ex, HttpServletRequest request) {

@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openclassrooms.safetynet.alert.configuration.DataStoreProperties;
+import com.openclassrooms.safetynet.alert.exception.DataStorePersistenceException;
 import com.openclassrooms.safetynet.alert.model.Database;
 import com.openclassrooms.safetynet.alert.utils.PersonTestBuilder;
 import com.openclassrooms.safetynet.alert.utils.TestSentenceGenerator;
@@ -239,7 +240,8 @@ public class JsonFileDataStoreTests {
     }
 
     @Test
-    void writeAll_shouldThrowRuntimeException_whenIOExceptionOccurs() throws IOException {
+    void writeAll_shouldThrowDataStorePersistenceException_whenIOExceptionOccurs()
+            throws IOException {
         // Unlike other tests, we need to re-initialize the store with the mocked ObjectMapper
         ObjectMapper objectMapper = mock(ObjectMapper.class);
 
@@ -257,9 +259,9 @@ public class JsonFileDataStoreTests {
                 .writeValue(any(File.class), any(Database.class));
 
         // Act & Assert
-        RuntimeException exception =
-                assertThrows(RuntimeException.class, () -> store.writeAll(testDb));
-        assertEquals("Failed to write JSON file", exception.getMessage());
+        DataStorePersistenceException exception =
+                assertThrows(DataStorePersistenceException.class, () -> store.writeAll(testDb));
+        assertEquals("Failed to write database file", exception.getMessage());
         assertInstanceOf(IOException.class, exception.getCause());
     }
 

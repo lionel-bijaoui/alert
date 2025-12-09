@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.openclassrooms.safetynet.alert.configuration.DataStoreProperties;
+import com.openclassrooms.safetynet.alert.exception.DataStorePersistenceException;
 import com.openclassrooms.safetynet.alert.model.Database;
 
 import jakarta.validation.constraints.NotNull;
@@ -138,6 +139,7 @@ public class JsonFileDataStore {
      * Write the provided database to the current file.
      *
      * @param database database to persist
+     * @throws DataStorePersistenceException if writing the file fails
      */
     public void writeAll(Database database) {
         try {
@@ -145,7 +147,7 @@ public class JsonFileDataStore {
             log.info("Database successfully persisted to {}", current);
         } catch (IOException e) {
             log.error("Failed to persist database to {}", current, e);
-            throw new RuntimeException("Failed to write database file", e);
+            throw new DataStorePersistenceException("Failed to write database file", e);
         }
     }
 }
