@@ -6,7 +6,6 @@ import com.openclassrooms.safetynet.alert.store.JsonFileDataStore;
 
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,13 +21,8 @@ public class JsonMedicalRecordRepository implements MedicalRecordRepository {
 
     @Override
     public MedicalRecord save(MedicalRecord medicalRecord) {
-        Database database =
-                jsonFileDataStore
-                        .readAll()
-                        .orElse(
-                                new Database(
-                                        new ArrayList<>(), new ArrayList<>(), new ArrayList<>()));
-        List<MedicalRecord> medicalRecords = database.getMedicalrecords();
+        Database database = jsonFileDataStore.getCachedDatabase();
+        List<MedicalRecord> medicalRecords = database.getMedicalRecords();
 
         medicalRecords.removeIf(
                 mr ->
@@ -36,17 +30,15 @@ public class JsonMedicalRecordRepository implements MedicalRecordRepository {
                                 && mr.getLastName().equalsIgnoreCase(medicalRecord.getLastName()));
         medicalRecords.add(medicalRecord);
 
-        database.setMedicalrecords(medicalRecords);
-        jsonFileDataStore.writeAll(database);
+        database.setMedicalRecords(medicalRecords);
+        jsonFileDataStore.setCachedDatabase(database);
+
         return medicalRecord;
     }
 
     @Override
     public List<MedicalRecord> findAll() {
-        return jsonFileDataStore
-                .readAll()
-                .map(Database::getMedicalrecords)
-                .orElse(new ArrayList<>());
+        return jsonFileDataStore.getCachedDatabase().getMedicalRecords();
     }
 
     @Override
@@ -61,20 +53,16 @@ public class JsonMedicalRecordRepository implements MedicalRecordRepository {
 
     @Override
     public void deleteByFirstNameAndLastName(String firstName, String lastName) {
-        Database database =
-                jsonFileDataStore
-                        .readAll()
-                        .orElse(
-                                new Database(
-                                        new ArrayList<>(), new ArrayList<>(), new ArrayList<>()));
-        List<MedicalRecord> medicalRecords = database.getMedicalrecords();
+        Database database = jsonFileDataStore.getCachedDatabase();
+
+        List<MedicalRecord> medicalRecords = database.getMedicalRecords();
 
         medicalRecords.removeIf(
                 mr ->
                         mr.getFirstName().equalsIgnoreCase(firstName)
                                 && mr.getLastName().equalsIgnoreCase(lastName));
 
-        database.setMedicalrecords(medicalRecords);
-        jsonFileDataStore.writeAll(database);
+        database.setMedicalRecords(medicalRecords);
+        jsonFileDataStore.setCachedDatabase(database);
     }
 }

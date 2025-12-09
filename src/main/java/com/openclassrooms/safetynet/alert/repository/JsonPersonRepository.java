@@ -6,7 +6,6 @@ import com.openclassrooms.safetynet.alert.store.JsonFileDataStore;
 
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,12 +21,7 @@ public class JsonPersonRepository implements PersonRepository {
 
     @Override
     public Person save(Person person) {
-        Database database =
-                jsonFileDataStore
-                        .readAll()
-                        .orElse(
-                                new Database(
-                                        new ArrayList<>(), new ArrayList<>(), new ArrayList<>()));
+        Database database = jsonFileDataStore.getCachedDatabase();
         List<Person> persons = database.getPersons();
 
         persons.removeIf(
@@ -37,13 +31,14 @@ public class JsonPersonRepository implements PersonRepository {
         persons.add(person);
 
         database.setPersons(persons);
-        jsonFileDataStore.writeAll(database);
+        jsonFileDataStore.setCachedDatabase(database);
+
         return person;
     }
 
     @Override
     public List<Person> findAll() {
-        return jsonFileDataStore.readAll().map(Database::getPersons).orElse(new ArrayList<>());
+        return jsonFileDataStore.getCachedDatabase().getPersons();
     }
 
     @Override
@@ -65,12 +60,8 @@ public class JsonPersonRepository implements PersonRepository {
 
     @Override
     public void deleteByFirstNameAndLastName(String firstName, String lastName) {
-        Database database =
-                jsonFileDataStore
-                        .readAll()
-                        .orElse(
-                                new Database(
-                                        new ArrayList<>(), new ArrayList<>(), new ArrayList<>()));
+        Database database = jsonFileDataStore.getCachedDatabase();
+
         List<Person> persons = database.getPersons();
 
         persons.removeIf(
@@ -79,6 +70,6 @@ public class JsonPersonRepository implements PersonRepository {
                                 && p.getLastName().equalsIgnoreCase(lastName));
 
         database.setPersons(persons);
-        jsonFileDataStore.writeAll(database);
+        jsonFileDataStore.setCachedDatabase(database);
     }
 }

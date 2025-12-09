@@ -6,7 +6,6 @@ import com.openclassrooms.safetynet.alert.store.JsonFileDataStore;
 
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,25 +21,20 @@ public class JsonFireStationRepository implements FireStationRepository {
 
     @Override
     public FireStation save(FireStation fireStation) {
-        Database database =
-                jsonFileDataStore
-                        .readAll()
-                        .orElse(
-                                new Database(
-                                        new ArrayList<>(), new ArrayList<>(), new ArrayList<>()));
-        List<FireStation> fireStations = database.getFirestations();
+        Database database = jsonFileDataStore.getCachedDatabase();
+        List<FireStation> fireStations = database.getFireStations();
 
         fireStations.removeIf(fs -> fs.getAddress().equalsIgnoreCase(fireStation.getAddress()));
         fireStations.add(fireStation);
 
-        database.setFirestations(fireStations);
-        jsonFileDataStore.writeAll(database);
+        database.setFireStations(fireStations);
+        jsonFileDataStore.setCachedDatabase(database);
         return fireStation;
     }
 
     @Override
     public List<FireStation> findAll() {
-        return jsonFileDataStore.readAll().map(Database::getFirestations).orElse(new ArrayList<>());
+        return jsonFileDataStore.getCachedDatabase().getFireStations();
     }
 
     @Override
@@ -66,17 +60,13 @@ public class JsonFireStationRepository implements FireStationRepository {
 
     @Override
     public void deleteByAddress(String address) {
-        Database database =
-                jsonFileDataStore
-                        .readAll()
-                        .orElse(
-                                new Database(
-                                        new ArrayList<>(), new ArrayList<>(), new ArrayList<>()));
-        List<FireStation> fireStations = database.getFirestations();
+        Database database = jsonFileDataStore.getCachedDatabase();
+
+        List<FireStation> fireStations = database.getFireStations();
 
         fireStations.removeIf(fs -> fs.getAddress().equalsIgnoreCase(address));
 
-        database.setFirestations(fireStations);
-        jsonFileDataStore.writeAll(database);
+        database.setFireStations(fireStations);
+        jsonFileDataStore.setCachedDatabase(database);
     }
 }

@@ -20,12 +20,12 @@ public abstract class IntegrationTestBase {
 
     @BeforeEach
     void setUpStore() {
-        store.load();
+        store.init();
     }
 
     @AfterEach
     void cleanUpStore() throws Exception {
-        Path current = Path.of(store.current());
+        Path current = Path.of(store.getCurrent());
         if (Files.exists(current)) {
             Files.delete(current);
         }

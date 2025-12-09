@@ -4,8 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.openclassrooms.safetynet.alert.configuration.DataStoreProperties;
 import com.openclassrooms.safetynet.alert.model.Database;
 import com.openclassrooms.safetynet.alert.utils.PersonTestBuilder;
@@ -45,8 +43,6 @@ public class JsonFileDataStoreTests {
     @BeforeEach
     void setup() {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         DataStoreProperties dataStoreProperties = new DataStoreProperties();
         dataStoreProperties.setCurrent(CURRENT_PATH_STRING);
@@ -138,10 +134,10 @@ public class JsonFileDataStoreTests {
                 database -> {
                     assertNotNull(database.getPersons());
                     assertFalse(database.getPersons().isEmpty());
-                    assertNotNull(database.getFirestations());
-                    assertFalse(database.getFirestations().isEmpty());
-                    assertNotNull(database.getMedicalrecords());
-                    assertFalse(database.getMedicalrecords().isEmpty());
+                    assertNotNull(database.getFireStations());
+                    assertFalse(database.getFireStations().isEmpty());
+                    assertNotNull(database.getMedicalRecords());
+                    assertFalse(database.getMedicalRecords().isEmpty());
                 },
                 () -> fail("Database should be present"));
     }
@@ -155,6 +151,31 @@ public class JsonFileDataStoreTests {
 
         verify(fileOperations).getFile(CURRENT_PATH_STRING);
         assertTrue(optionalDatabase.isEmpty());
+    }
+
+    @Test
+    void readAll_shouldThrowIllegalStateException_whenIOExceptionOccurs() throws IOException {
+        // Unlike other tests, we need to re-initialize the store with the mocked ObjectMapper
+        ObjectMapper objectMapper = mock(ObjectMapper.class);
+
+        DataStoreProperties dataStoreProperties = new DataStoreProperties();
+        dataStoreProperties.setCurrent(CURRENT_PATH_STRING);
+        dataStoreProperties.setInitial(INITIAL_PATH_STRING);
+
+        store = new JsonFileDataStore(objectMapper, dataStoreProperties, fileOperations);
+
+        File jsonFile = mock(File.class);
+        when(jsonFile.exists()).thenReturn(true);
+        when(jsonFile.isFile()).thenReturn(true);
+        when(jsonFile.length()).thenReturn(100L);
+        when(fileOperations.getFile(anyString())).thenReturn(jsonFile);
+        when(objectMapper.readValue(any(File.class), eq(Database.class)))
+                .thenThrow(new IOException("Simulated read error"));
+
+        RuntimeException exception =
+                assertThrows(IllegalStateException.class, () -> store.readAll());
+        assertEquals("Cannot read database file", exception.getMessage());
+        assertInstanceOf(IOException.class, exception.getCause());
     }
 
     @Test
@@ -176,9 +197,9 @@ public class JsonFileDataStoreTests {
         optionalDatabase.ifPresentOrElse(
                 after -> {
                     assertEquals(database.getPersons().size(), after.getPersons().size());
-                    assertEquals(database.getFirestations().size(), after.getFirestations().size());
+                    assertEquals(database.getFireStations().size(), after.getFireStations().size());
                     assertEquals(
-                            database.getMedicalrecords().size(), after.getMedicalrecords().size());
+                            database.getMedicalRecords().size(), after.getMedicalRecords().size());
                 },
                 () -> fail("Database should be present"));
     }
@@ -211,9 +232,65 @@ public class JsonFileDataStoreTests {
         optionalDatabase.ifPresentOrElse(
                 database -> {
                     assertEquals(1, database.getPersons().size());
-                    assertTrue(database.getFirestations().isEmpty());
-                    assertInstanceOf(List.class, database.getMedicalrecords());
+                    assertTrue(database.getFireStations().isEmpty());
+                    assertInstanceOf(List.class, database.getMedicalRecords());
                 },
                 () -> fail("Database should be present"));
+    }
+
+    @Test
+    void writeAll_shouldThrowRuntimeException_whenIOExceptionOccurs() throws IOException {
+        // Unlike other tests, we need to re-initialize the store with the mocked ObjectMapper
+        ObjectMapper objectMapper = mock(ObjectMapper.class);
+
+        DataStoreProperties dataStoreProperties = new DataStoreProperties();
+        dataStoreProperties.setCurrent(CURRENT_PATH_STRING);
+        dataStoreProperties.setInitial(INITIAL_PATH_STRING);
+
+        store = new JsonFileDataStore(objectMapper, dataStoreProperties, fileOperations);
+
+        Database testDb = new Database(List.of(), List.of(), List.of());
+        File mockFile = mock(File.class);
+        when(fileOperations.getFile(anyString())).thenReturn(mockFile);
+        doThrow(new IOException("Simulated write error"))
+                .when(objectMapper)
+                .writeValue(any(File.class), any(Database.class));
+
+        // Act & Assert
+        RuntimeException exception =
+                assertThrows(RuntimeException.class, () -> store.writeAll(testDb));
+        assertEquals("Failed to write JSON file", exception.getMessage());
+        assertInstanceOf(IOException.class, exception.getCause());
+    }
+
+    @Test
+    void init_shouldLoadAndCacheDatabase_whenCalled() throws IOException {
+        // Prepare a temporary current file
+        Path currentPath = tempDirectory.resolve("current.json");
+        Files.copy(Path.of(INITIAL_PATH_STRING), currentPath, StandardCopyOption.REPLACE_EXISTING);
+
+        when(fileOperations.notExists(any(Path.class))).thenReturn(false);
+        when(fileOperations.getFile(CURRENT_PATH_STRING)).thenReturn(currentPath.toFile());
+
+        store.init();
+
+        Database cachedDb = store.getCachedDatabase();
+        assertNotNull(cachedDb);
+        assertFalse(cachedDb.getPersons().isEmpty());
+        assertFalse(cachedDb.getFireStations().isEmpty());
+        assertFalse(cachedDb.getMedicalRecords().isEmpty());
+    }
+
+    @Test
+    void init_shouldSetEmptyDatabase_whenReadAllReturnsEmpty() {
+        when(fileOperations.getFile(CURRENT_PATH_STRING)).thenReturn(new File("nonexistent.json"));
+
+        store.init();
+
+        Database cachedDb = store.getCachedDatabase();
+        assertNotNull(cachedDb);
+        assertTrue(cachedDb.getPersons().isEmpty());
+        assertTrue(cachedDb.getFireStations().isEmpty());
+        assertTrue(cachedDb.getMedicalRecords().isEmpty());
     }
 }

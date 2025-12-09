@@ -40,7 +40,7 @@ public class JsonPersonsRepositoryTests {
     void save_shouldSavePersonAndReturnIt_whenNewPerson() {
         Person personToSave = new PersonTestBuilder().build();
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         Person savedPerson = personsRepository.save(personToSave);
 
@@ -52,7 +52,7 @@ public class JsonPersonsRepositoryTests {
         assertEquals(personToSave.getZip(), savedPerson.getZip());
         assertEquals(personToSave.getPhone(), savedPerson.getPhone());
         assertEquals(personToSave.getEmail(), savedPerson.getEmail());
-        verify(jsonFileDataStore, times(1)).writeAll(database);
+        verify(jsonFileDataStore, times(1)).setCachedDatabase(database);
         assertTrue(
                 database.getPersons().contains(personToSave),
                 "The person should be added to the database.");
@@ -64,13 +64,13 @@ public class JsonPersonsRepositoryTests {
         Person updatedPerson = new PersonTestBuilder().withAddress("123 New Address").build();
         database.getPersons().add(existingPerson);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         Person savedPerson = personsRepository.save(updatedPerson);
 
         assertNotNull(savedPerson);
         assertEquals(updatedPerson.getAddress(), savedPerson.getAddress());
-        verify(jsonFileDataStore, times(1)).writeAll(database);
+        verify(jsonFileDataStore, times(1)).setCachedDatabase(database);
         assertEquals(
                 1,
                 database.getPersons().size(),
@@ -86,7 +86,7 @@ public class JsonPersonsRepositoryTests {
         Person person = new PersonTestBuilder().build();
         database.getPersons().add(person);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         List<Person> result = personsRepository.findAll();
 
@@ -98,25 +98,25 @@ public class JsonPersonsRepositoryTests {
 
     @Test
     void findAll_shouldReturnEmptyList_whenDatabaseEmpty() {
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.empty());
+        Database emptyDatabase =
+                new Database(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(emptyDatabase);
 
         List<Person> result = personsRepository.findAll();
 
         assertNotNull(result);
         assertTrue(result.isEmpty(), "The returned persons list should be empty.");
-        verify(jsonFileDataStore, times(1)).readAll();
     }
 
     @Test
     void findAll_shouldReturnEmptyList_whenDatabaseHasNullPersons() {
         database.setPersons(null);
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         List<Person> result = personsRepository.findAll();
 
         assertNotNull(result);
         assertTrue(result.isEmpty(), "The returned persons list should be empty.");
-        verify(jsonFileDataStore, times(1)).readAll();
     }
 
     @Test
@@ -124,7 +124,7 @@ public class JsonPersonsRepositoryTests {
         Person person = new PersonTestBuilder().build();
         database.getPersons().add(person);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         Optional<Person> found =
                 personsRepository.findByFirstNameAndLastName(
@@ -143,7 +143,7 @@ public class JsonPersonsRepositoryTests {
         Person person = new PersonTestBuilder().build();
         database.getPersons().add(person);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         Optional<Person> found = personsRepository.findByFirstNameAndLastName("Not", "Here");
 
@@ -158,7 +158,7 @@ public class JsonPersonsRepositoryTests {
         database.getPersons().add(person);
         database.getPersons().add(anotherPerson);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         List<Person> found = personsRepository.findByAddress(person.getAddress().toUpperCase());
 
@@ -175,7 +175,7 @@ public class JsonPersonsRepositoryTests {
         Person person = new PersonTestBuilder().build();
         database.getPersons().add(person);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         List<Person> found = personsRepository.findByAddress("Unknown Address");
 
@@ -190,11 +190,11 @@ public class JsonPersonsRepositoryTests {
         Person person = new PersonTestBuilder().withLastName("Doe").build();
         database.getPersons().add(person);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         personsRepository.deleteByFirstNameAndLastName(person.getFirstName(), person.getLastName());
 
-        verify(jsonFileDataStore, times(1)).writeAll(database);
+        verify(jsonFileDataStore, times(1)).setCachedDatabase(database);
         assertFalse(
                 database.getPersons().contains(person),
                 "The person should be deleted from the database.");
@@ -205,11 +205,11 @@ public class JsonPersonsRepositoryTests {
         Person person = new PersonTestBuilder().build();
         database.getPersons().add(person);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         personsRepository.deleteByFirstNameAndLastName("Nonexistent", "Person");
 
-        verify(jsonFileDataStore, times(1)).writeAll(database);
+        verify(jsonFileDataStore, times(1)).setCachedDatabase(database);
         assertEquals(
                 1,
                 database.getPersons().size(),

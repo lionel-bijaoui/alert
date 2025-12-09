@@ -40,8 +40,8 @@ class JsonFireStationRepositoryTest {
     void save_shouldSaveFireStationAndReturnIt_whenNewFireStation() {
         FireStation fireStation = new FireStationTestBuilder().build();
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
-        doNothing().when(jsonFileDataStore).writeAll(database);
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
+        doNothing().when(jsonFileDataStore).setCachedDatabase(database);
 
         FireStation savedFireStation = fireStationRepository.save(fireStation);
 
@@ -49,7 +49,7 @@ class JsonFireStationRepositoryTest {
         assertEquals(fireStation.getAddress(), savedFireStation.getAddress());
         assertEquals(fireStation.getStation(), savedFireStation.getStation());
         assertTrue(
-                database.getFirestations().contains(savedFireStation),
+                database.getFireStations().contains(savedFireStation),
                 "The fire station should be added to the database");
     }
 
@@ -57,13 +57,13 @@ class JsonFireStationRepositoryTest {
     void save_shouldUpdateExistingFireStation_whenFireStationAlreadyExists() {
         final Integer fireStationNewNumber = 4;
         FireStation existingFireStation = new FireStationTestBuilder().build();
-        database.getFirestations().add(existingFireStation);
+        database.getFireStations().add(existingFireStation);
 
         FireStation updatedFireStation =
                 new FireStationTestBuilder().withStation(fireStationNewNumber).build();
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
-        doNothing().when(jsonFileDataStore).writeAll(database);
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
+        doNothing().when(jsonFileDataStore).setCachedDatabase(database);
 
         FireStation savedFireStation = fireStationRepository.save(updatedFireStation);
 
@@ -72,20 +72,20 @@ class JsonFireStationRepositoryTest {
         assertEquals(fireStationNewNumber, savedFireStation.getStation());
         assertEquals(
                 1,
-                database.getFirestations().size(),
+                database.getFireStations().size(),
                 "There should still be only one fire station in the database.");
         assertEquals(
                 fireStationNewNumber,
-                database.getFirestations().getFirst().getStation(),
+                database.getFireStations().getFirst().getStation(),
                 "The fire station should be added to the database");
     }
 
     @Test
     void findAll_shouldReturnFireStations_whenDatabaseHasFireStations() {
         FireStation existingFireStation = new FireStationTestBuilder().build();
-        database.getFirestations().add(existingFireStation);
+        database.getFireStations().add(existingFireStation);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn((database));
 
         List<FireStation> fireStations = fireStationRepository.findAll();
 
@@ -98,7 +98,9 @@ class JsonFireStationRepositoryTest {
 
     @Test
     void findAll_shouldReturnEmptyList_whenDatabaseEmpty() {
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.empty());
+        Database emptyDatabase =
+                new Database(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(emptyDatabase);
 
         List<FireStation> fireStations = fireStationRepository.findAll();
 
@@ -108,8 +110,8 @@ class JsonFireStationRepositoryTest {
 
     @Test
     void findAll_shouldReturnEmptyList_whenDatabaseHasNullPersons() {
-        database.setFirestations(null);
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        database.setFireStations(null);
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         List<FireStation> fireStations = fireStationRepository.findAll();
 
@@ -120,9 +122,9 @@ class JsonFireStationRepositoryTest {
     @Test
     void findAllByAddress_shouldBeCaseInsensitiveAndReturnStream_whenMatchingExists() {
         FireStation fireStation = new FireStationTestBuilder().build();
-        database.getFirestations().add(fireStation);
+        database.getFireStations().add(fireStation);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         List<FireStation> foundFireStations =
                 fireStationRepository.findAllByAddress(fireStation.getAddress().toUpperCase());
@@ -139,9 +141,9 @@ class JsonFireStationRepositoryTest {
     @Test
     void findAllByAddress_shouldReturnEmptyStream_whenNoMatchFound() {
         FireStation fireStation = new FireStationTestBuilder().build();
-        database.getFirestations().add(fireStation);
+        database.getFireStations().add(fireStation);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         List<FireStation> foundFireStations =
                 fireStationRepository.findAllByAddress("Nonexistent Address 456");
@@ -155,9 +157,9 @@ class JsonFireStationRepositoryTest {
     @Test
     void findByAddress_shouldBeCaseInsensitiveAndFindFireStation_whenMatchingExists() {
         FireStation fireStation = new FireStationTestBuilder().build();
-        database.getFirestations().add(fireStation);
+        database.getFireStations().add(fireStation);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         Optional<FireStation> foundFireStation =
                 fireStationRepository.findByAddress(fireStation.getAddress().toUpperCase());
@@ -170,9 +172,9 @@ class JsonFireStationRepositoryTest {
     @Test
     void findByAddress_shouldReturnEmpty_whenNoMatchFound() {
         FireStation fireStation = new FireStationTestBuilder().build();
-        database.getFirestations().add(fireStation);
+        database.getFireStations().add(fireStation);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         Optional<FireStation> foundFireStation =
                 fireStationRepository.findByAddress("Fake Address 123");
@@ -185,10 +187,10 @@ class JsonFireStationRepositoryTest {
         FireStation fireStation1 = new FireStationTestBuilder().build();
         FireStation fireStation2 =
                 new FireStationTestBuilder().withAddress("29 15th St").withStation(3).build();
-        database.getFirestations().add(fireStation1);
-        database.getFirestations().add(fireStation2);
+        database.getFireStations().add(fireStation1);
+        database.getFireStations().add(fireStation2);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         List<FireStation> foundFireStations =
                 fireStationRepository.findByStationNumber(fireStation2.getStation());
@@ -207,9 +209,9 @@ class JsonFireStationRepositoryTest {
     @Test
     void findByStationNumber_shouldReturnEmptyList_whenNoMatchFound() {
         FireStation fireStation = new FireStationTestBuilder().build();
-        database.getFirestations().add(fireStation);
+        database.getFireStations().add(fireStation);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         List<FireStation> foundFireStations = fireStationRepository.findByStationNumber(999);
 
@@ -222,31 +224,31 @@ class JsonFireStationRepositoryTest {
     @Test
     void deleteByAddress_shouldDeleteFireStation_whenFireStationExists() {
         FireStation fireStation = new FireStationTestBuilder().build();
-        database.getFirestations().add(fireStation);
+        database.getFireStations().add(fireStation);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
-        doNothing().when(jsonFileDataStore).writeAll(database);
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
+        doNothing().when(jsonFileDataStore).setCachedDatabase(database);
 
         fireStationRepository.deleteByAddress(fireStation.getAddress());
 
         assertTrue(
-                database.getFirestations().isEmpty(),
+                database.getFireStations().isEmpty(),
                 "The fire station should be deleted from the database.");
     }
 
     @Test
     void deleteByAddress_shouldDoNothing_whenFireStationDoesNotExist() {
         FireStation fireStation = new FireStationTestBuilder().build();
-        database.getFirestations().add(fireStation);
+        database.getFireStations().add(fireStation);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
-        doNothing().when(jsonFileDataStore).writeAll(any(Database.class));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
+        doNothing().when(jsonFileDataStore).setCachedDatabase(any(Database.class));
 
         fireStationRepository.deleteByAddress("Unknown Address 123");
 
         assertEquals(
                 1,
-                database.getFirestations().size(),
+                database.getFireStations().size(),
                 "The database should still contain the original fire station.");
     }
 }

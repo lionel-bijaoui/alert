@@ -1,28 +1,39 @@
 package com.openclassrooms.safetynet.alert.model;
 
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /** Simple container representing the JSON database structure used by the app. */
-@Data
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Database {
 
-    @JsonSetter(nulls = Nulls.AS_EMPTY)
-    public List<Person> persons = new ArrayList<>();
+    @JsonProperty("persons")
+    private List<Person> persons = new ArrayList<>();
 
-    @JsonSetter(nulls = Nulls.AS_EMPTY)
-    public List<FireStation> firestations = new ArrayList<>();
+    @JsonProperty("firestations")
+    private List<FireStation> fireStations = new ArrayList<>();
 
-    @JsonSetter(nulls = Nulls.AS_EMPTY)
-    public List<MedicalRecord> medicalrecords = new ArrayList<>();
+    @JsonProperty("medicalrecords")
+    private List<MedicalRecord> medicalRecords = new ArrayList<>();
+
+    public void setPersons(List<Person> persons) {
+        this.persons = persons != null ? persons : new ArrayList<>();
+    }
+
+    public void setFireStations(List<FireStation> fireStations) {
+        this.fireStations = fireStations != null ? fireStations : new ArrayList<>();
+    }
+
+    public void setMedicalRecords(List<MedicalRecord> medicalRecords) {
+        this.medicalRecords = medicalRecords != null ? medicalRecords : new ArrayList<>();
+    }
 }

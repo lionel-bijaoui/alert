@@ -40,13 +40,13 @@ class JsonMedicalRecordRepositoryTest {
     void save_shouldSaveMedicalRecordAndPersist_whenNewRecord() {
         MedicalRecord record = new MedicalRecordTestBuilder().build();
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         medicalRecordRepository.save(record);
 
-        verify(jsonFileDataStore, times(1)).writeAll(database);
+        verify(jsonFileDataStore, times(1)).setCachedDatabase(database);
         assertTrue(
-                database.getMedicalrecords().contains(record),
+                database.getMedicalRecords().contains(record),
                 "The medical record should be added to the database");
     }
 
@@ -55,29 +55,29 @@ class JsonMedicalRecordRepositoryTest {
         MedicalRecord existing = new MedicalRecordTestBuilder().build();
         MedicalRecord updated =
                 new MedicalRecordTestBuilder().withMedications(List.of("aznol:350mg")).build();
-        database.getMedicalrecords().add(existing);
+        database.getMedicalRecords().add(existing);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         medicalRecordRepository.save(updated);
 
-        verify(jsonFileDataStore, times(1)).writeAll(database);
+        verify(jsonFileDataStore, times(1)).setCachedDatabase(database);
         assertEquals(
                 1,
-                database.getMedicalrecords().size(),
+                database.getMedicalRecords().size(),
                 "There should still be only one medical record in the database.");
         assertEquals(
                 updated.getMedications(),
-                database.getMedicalrecords().getFirst().getMedications(),
+                database.getMedicalRecords().getFirst().getMedications(),
                 "The medical record should be updated in the database");
     }
 
     @Test
     void findAll_shouldReturnMedicalRecords_whenDatabaseHasRecords() {
         MedicalRecord medicalRecord = new MedicalRecordTestBuilder().build();
-        database.getMedicalrecords().add(medicalRecord);
+        database.getMedicalRecords().add(medicalRecord);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         List<MedicalRecord> result = medicalRecordRepository.findAll();
 
@@ -89,7 +89,9 @@ class JsonMedicalRecordRepositoryTest {
 
     @Test
     void findAll_shouldReturnEmptyList_whenDatabaseEmpty() {
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.empty());
+        Database emptyDatabase =
+                new Database(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(emptyDatabase);
 
         List<MedicalRecord> result = medicalRecordRepository.findAll();
 
@@ -99,8 +101,8 @@ class JsonMedicalRecordRepositoryTest {
 
     @Test
     void findAll_shouldReturnEmptyList_whenDatabaseHasNullMedicalRecords() {
-        database.setMedicalrecords(null);
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        database.setMedicalRecords(null);
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         List<MedicalRecord> result = medicalRecordRepository.findAll();
 
@@ -111,9 +113,9 @@ class JsonMedicalRecordRepositoryTest {
     @Test
     void findByFirstNameAndLastName_shouldBeCaseInsensitiveAndFindRecord_whenMatchingExists() {
         MedicalRecord medicalRecord = new MedicalRecordTestBuilder().build();
-        database.getMedicalrecords().add(medicalRecord);
+        database.getMedicalRecords().add(medicalRecord);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         Optional<MedicalRecord> found =
                 medicalRecordRepository.findByFirstNameAndLastName(
@@ -126,15 +128,14 @@ class JsonMedicalRecordRepositoryTest {
                     assertEquals(medicalRecord.getLastName(), mr.getLastName());
                 },
                 () -> fail("Medical record should be found."));
-        verify(jsonFileDataStore, times(1)).readAll();
     }
 
     @Test
     void findByFirstNameAndLastName_shouldReturnNull_whenNoMatchFound() {
         MedicalRecord medicalRecord = new MedicalRecordTestBuilder().build();
-        database.getMedicalrecords().add(medicalRecord);
+        database.getMedicalRecords().add(medicalRecord);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         Optional<MedicalRecord> found =
                 medicalRecordRepository.findByFirstNameAndLastName("Not", "Here");
@@ -145,31 +146,31 @@ class JsonMedicalRecordRepositoryTest {
     @Test
     void deleteByFirstNameAndLastName_shouldDeleteRecord_whenRecordExists() {
         MedicalRecord medicalRecord = new MedicalRecordTestBuilder().build();
-        database.getMedicalrecords().add(medicalRecord);
+        database.getMedicalRecords().add(medicalRecord);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         medicalRecordRepository.deleteByFirstNameAndLastName("John", "Doe");
 
-        verify(jsonFileDataStore, times(1)).writeAll(database);
+        verify(jsonFileDataStore, times(1)).setCachedDatabase(database);
         assertTrue(
-                database.getMedicalrecords().isEmpty(),
+                database.getMedicalRecords().isEmpty(),
                 "The medical record should be deleted from the database.");
     }
 
     @Test
     void deleteByFirstNameAndLastName_shouldDoNothing_whenRecordDoesNotExist() {
         MedicalRecord medicalRecord = new MedicalRecordTestBuilder().build();
-        database.getMedicalrecords().add(medicalRecord);
+        database.getMedicalRecords().add(medicalRecord);
 
-        when(jsonFileDataStore.readAll()).thenReturn(Optional.of(database));
+        when(jsonFileDataStore.getCachedDatabase()).thenReturn(database);
 
         medicalRecordRepository.deleteByFirstNameAndLastName("Unknown", "Person");
 
-        verify(jsonFileDataStore, times(1)).writeAll(database);
+        verify(jsonFileDataStore, times(1)).setCachedDatabase(database);
         assertEquals(
                 1,
-                database.getMedicalrecords().size(),
+                database.getMedicalRecords().size(),
                 "The database should still contain the original medical record.");
     }
 }

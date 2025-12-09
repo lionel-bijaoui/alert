@@ -31,7 +31,7 @@ public class JsonFileDataStoreIT extends IntegrationTestBase {
 
     @Test
     void load_shouldMakeCurrentFileReadable() throws IOException {
-        Path currentPath = Path.of(store.current());
+        Path currentPath = Path.of(store.getCurrent());
 
         assertTrue(Files.exists(currentPath), "The current JSON file must exist after loading.");
         assertTrue(
@@ -43,9 +43,9 @@ public class JsonFileDataStoreIT extends IntegrationTestBase {
                 db -> {
                     assertNotNull(db.getPersons(), "The persons list must not be null.");
                     assertFalse(db.getPersons().isEmpty(), "The persons list must not be empty.");
-                    assertNotNull(db.getFirestations(), "The fire stations list must not be null.");
+                    assertNotNull(db.getFireStations(), "The fire stations list must not be null.");
                     assertNotNull(
-                            db.getMedicalrecords(), "The medical records list must not be null.");
+                            db.getMedicalRecords(), "The medical records list must not be null.");
                 },
                 () -> {
                     throw new AssertionError("The database must be readable after loading.");
@@ -85,12 +85,12 @@ public class JsonFileDataStoreIT extends IntegrationTestBase {
                             database.getPersons().size(),
                             "After modified write, there must be exactly 1 person.");
                     assertTrue(
-                            database.getFirestations() != null
-                                    && database.getFirestations().isEmpty(),
+                            database.getFireStations() != null
+                                    && database.getFireStations().isEmpty(),
                             "The fire stations list must be empty after the modified write.");
                     assertTrue(
-                            database.getMedicalrecords() != null
-                                    && database.getMedicalrecords().isEmpty(),
+                            database.getMedicalRecords() != null
+                                    && database.getMedicalRecords().isEmpty(),
                             "The medical records list must be empty after the modified write.");
                 },
                 () -> {
