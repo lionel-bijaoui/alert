@@ -209,4 +209,25 @@ class FireStationServiceTest {
         assertNotNull(result);
         assertTrue(result.isEmpty());
     }
+
+    @Test
+    void getAddressListFromFireStationNumberList_shouldReturnAddressList_whenExists() {
+        FireStation fireStation1 = new FireStationTestBuilder().withAddress("Somewhere").build();
+        FireStation fireStation2 =
+                new FireStationTestBuilder().withAddress("Anywhere").withStation(99).build();
+        List<Integer> stationNumbers =
+                List.of(fireStation1.getStation(), fireStation2.getStation());
+
+        when(jsonFireStationRepository.findAll())
+                .thenReturn(List.of(existingFireStation, fireStation1, fireStation2));
+
+        List<String> result =
+                fireStationService.getAddressListFromFireStationNumberList(stationNumbers);
+
+        assertNotNull(result);
+        assertEquals(3, result.size());
+        assertTrue(result.contains(existingFireStation.getAddress()));
+        assertTrue(result.contains(fireStation1.getAddress()));
+        assertTrue(result.contains(fireStation2.getAddress()));
+    }
 }
