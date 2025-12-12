@@ -42,6 +42,13 @@
 
       <plugin>
         <artifactId>jacoco-maven-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/*Test.class</exclude>
+            <exclude>**/*Tests.class</exclude>
+            <exclude>**/*IT.class</exclude>
+          </excludes>
+        </configuration>
         <executions>
           <execution>
             <goals>
